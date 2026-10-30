@@ -1223,6 +1223,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#de-cada-sesion-a-nuestro-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        De cada sesión a nuestro sistema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unidad-2-pipeline-en-tiempo-real" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1326,6 +1337,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#de-cada-sesion-a-nuestro-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        De cada sesión a nuestro sistema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unidad-2-pipeline-en-tiempo-real" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1381,6 +1403,53 @@
 <h1 id="rubrica-y-evidencias">Rúbrica y evidencias<a class="headerlink" href="#rubrica-y-evidencias" title="Permanent link">&para;</a></h1>
 <p>Cada criterio de evaluación del curso, con <strong>dónde se verifica</strong> en el sistema.
 Todo es verificable en vivo (logs, tablero, Kafka) o en el repositorio.</p>
+<h2 id="de-cada-sesion-a-nuestro-sistema">De cada sesión a nuestro sistema<a class="headerlink" href="#de-cada-sesion-a-nuestro-sistema" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Sesión</th>
+<th>Capacidad</th>
+<th>Cómo la resuelve el NIDS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S6</td>
+<td>Evento empresarial</td>
+<td>Tickets de la mesa de TI en <code>incidentes-seguridad</code> (contrato v1.1); el modelo también los abre</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Evento IoT/sensor</td>
+<td>Telemetría real del Raspberry Pi: MQTT → puente → <code>pi-telemetria</code></td>
+</tr>
+<tr>
+<td>S8</td>
+<td>Streaming con Spark</td>
+<td>5 consultas: ventana fija y deslizante, watermark, checkpoint por consulta</td>
+</tr>
+<tr>
+<td>S9</td>
+<td>Observabilidad y costos</td>
+<td>Lag de Kafka, duración de batch, latencia, salud del sensor y de la VM; costo real en Azure</td>
+</tr>
+<tr>
+<td>S10</td>
+<td>Series de tiempo</td>
+<td>4 modelos (uno por integrante) contra persistencia, validación cruzada temporal, inferencia por minuto</td>
+</tr>
+<tr>
+<td>S11</td>
+<td>BI/ML con KPIs</td>
+<td>Un tablero con KPIs de red, predicción, error en vivo y RMSE de test lado a lado</td>
+</tr>
+<tr>
+<td>S12</td>
+<td>Pipeline ensamblado</td>
+<td>Todo lo anterior corriendo 24/7 sobre tráfico real del laboratorio</td>
+</tr>
+</tbody>
+</table>
 <h2 id="unidad-2-pipeline-en-tiempo-real">Unidad 2 — Pipeline en tiempo real<a class="headerlink" href="#unidad-2-pipeline-en-tiempo-real" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

@@ -1293,10 +1293,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-antes-de-presentar-checklist" class="md-nav__link">
+  <a href="#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Antes de presentar (checklist)
+        5. Plan B: el Pi no tiene internet en el laboratorio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-antes-de-presentar-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Antes de presentar (checklist)
       
     </span>
   </a>
@@ -1390,10 +1401,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-antes-de-presentar-checklist" class="md-nav__link">
+  <a href="#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Antes de presentar (checklist)
+        5. Plan B: el Pi no tiene internet en el laboratorio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-antes-de-presentar-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Antes de presentar (checklist)
       
     </span>
   </a>
@@ -1519,11 +1541,35 @@ real sobre el umbral, la anomalía y el incidente <code>nids-modelo</code> en Gr
    son de negocio; "duración del batch" es técnica. Pushgateway es un atajo
    porque Spark Streaming en Python no expone un endpoint para Prometheus; lo
    recomendado es el PrometheusServlet de Spark o un exporter.</li>
+<li><strong>¿Por qué la inferencia guarda historial si podría ser sin estado?</strong> Sin
+   rezagos el modelo perdía contra la persistencia (66 % peor en bytes). Con
+   5 filas por sensor en memoria le gana en los 4 indicadores, y esas filas se
+   reconstruyen del Data Lake al reiniciar (<a href="../modelos/#11-dataset-supervisado">Modelos</a>).</li>
+<li><strong>¿Cómo predice si el tráfico real cambia?</strong> Cada 6 h se reentrena con el
+   histórico más lo que llegó en vivo; si un modelo deja de ganarle a la
+   persistencia, el tablero lo muestra (mejora negativa).</li>
 </ol>
-<h2 id="5-antes-de-presentar-checklist">5. Antes de presentar (checklist)<a class="headerlink" href="#5-antes-de-presentar-checklist" title="Permanent link">&para;</a></h2>
+<h2 id="5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio">5. Plan B: el Pi no tiene internet en el laboratorio<a class="headerlink" href="#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio" title="Permanent link">&para;</a></h2>
+<p><code>eth0</code> está en el puerto espejo, que solo escucha, así que la subida a la nube
+va por WiFi. El Pi ya guarda la red del hotspot del celular (<code>pi/bin/nids-wifi.sh</code>).</p>
+<ol>
+<li><strong>Primero:</strong> encender el hotspot del celular con el mismo nombre y la misma
+   clave. En 1 minuto el panel "Segundos desde el último archivo" vuelve a verde.</li>
+<li><strong>Si aun así no conecta:</strong> encender el reproductor del histórico en la VM:
+   <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span>respaldo<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>reproductor
+</code></pre></div>
+   Reproduce en tiempo real el tráfico de TRCU.csv del mismo día de la semana
+   y la misma hora, como sensor <code>replay-trcu</code>, por el mismo tópico y contrato.
+   Hay que <strong>decirlo al jurado</strong>: es tráfico real de la U, pero de julio.
+   El reentrenamiento lo excluye. Apagarlo al terminar:
+   <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span>respaldo<span class="w"> </span>stop<span class="w"> </span>reproductor
+</code></pre></div></li>
+</ol>
+<h2 id="6-antes-de-presentar-checklist">6. Antes de presentar (checklist)<a class="headerlink" href="#6-antes-de-presentar-checklist" title="Permanent link">&para;</a></h2>
 <ul>
 <li>[ ] Grafana abre (http://&lt;IP_VM&gt;:3000) y el panel "Segundos desde el último archivo" está en verde.</li>
 <li>[ ] <code>docker compose ps</code>: todo <code>Up</code> (kafka-topicos aparece como <code>Exited (0)</code>, es normal).</li>
+<li>[ ] Hotspot del celular encendido si el Pi no tiene otra salida a internet.</li>
 <li>[ ] Túnel SSH listo para Kafka UI si lo piden.</li>
 <li>[ ] Cada integrante abrió su notebook y su página.</li>
 </ul>

@@ -1609,6 +1609,13 @@ clasificador exigiría inventar etiquetas. Las series de tiempo usan como
   - <code>gap_min</code>, los minutos desde la fila anterior.</p>
 <p>Los rezagos se calculan con funciones de ventana en batch (<code>con_rezagos()</code>) y
 con una memoria de 5 filas en streaming (<code>rezagos_fila()</code>). Las dos implementaciones son equivalentes.</p>
+<p><strong>Decisión propia: inferencia con estado.</strong> La forma más simple de inferir en
+streaming es sin estado: cada ventana se predice solo con su propia fila. La
+probamos y el modelo quedaba <strong>peor que la persistencia</strong> (en bytes, 66 % peor
+en test). Con los rezagos le gana en los 4 indicadores. El costo es guardar 5
+filas por sensor en el driver, que es poco. Para que un reinicio no las pierda,
+se reconstruyen desde el Data Lake (<code>precargar_historial()</code>) antes de procesar
+el primer lote.</p>
 <h3 id="12-protocolo-de-validacion">1.2 Protocolo de validación<a class="headerlink" href="#12-protocolo-de-validacion" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>flowchart LR
     A["0 %"] --- B["50 %"] --- C["60 %"] --- D["70 %"] --- E["80 %"] --- F["100 %"]

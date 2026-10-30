@@ -1500,9 +1500,17 @@ ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span cl
 </code></pre></div>
 <p>Desde ese momento el Pi es <strong>enchufar y listo</strong>: al encender monta el disco,
 sincroniza la hora, captura, abre el túnel y sube.</p>
-<p><strong>En el laboratorio:</strong> <code>eth0</code> va al puerto espejo; la salida a internet va por
-WiFi o un segundo cable. Si la red del campus bloquea el 22, en
-<code>/etc/nids/nids.conf</code> se cambia <code>VM_PUERTO=443</code>.</p>
+<p><strong>En el laboratorio:</strong> <code>eth0</code> va al puerto espejo, que no da internet; la
+subida va por WiFi. Cada red se guarda una vez (pide nombre y clave por
+teclado, nada queda en el repositorio):</p>
+<div class="highlight"><pre><span></span><code>scp<span class="w"> </span>pi/bin/nids-wifi.sh<span class="w"> </span>david@&lt;IP_PI&gt;:
+ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span class="w"> </span>bash<span class="w"> </span>nids-wifi.sh<span class="w"> </span>celular<span class="w"> </span><span class="m">10</span><span class="w">    </span><span class="c1"># hotspot del celular</span>
+ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span class="w"> </span>bash<span class="w"> </span>nids-wifi.sh<span class="w"> </span>campus<span class="w"> </span><span class="m">20</span><span class="w">     </span><span class="c1"># WiFi del campus (WPA2 con clave)</span>
+</code></pre></div>
+<p>El Pi usa la de mayor prioridad que esté al alcance. Si la red del campus
+bloquea el 22, en <code>/etc/nids/nids.conf</code> se cambia <code>VM_PUERTO=443</code>. Si no hay
+ninguna red, el Pi igual captura y guarda en su disco; la demo tiene un plan B
+(<a href="../sustentacion/#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio">Guion §5</a>).</p>
 <h2 id="4-verificacion">4. Verificación<a class="headerlink" href="#4-verificacion" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Pi</span>
 systemctl<span class="w"> </span>is-active<span class="w"> </span>nids-captura<span class="w"> </span>nids-subida<span class="w"> </span>nids-tunel<span class="w"> </span>nids-telemetria
