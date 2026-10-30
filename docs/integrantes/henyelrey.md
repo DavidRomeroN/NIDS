@@ -1,6 +1,6 @@
 # Henyelrey Lucio Garcia Chura — Intentos de conexión (SYN)
 
-**Énfasis en el equipo:** preparación del dato, modelos y comparación contra persistencia.
+**Rol en el equipo:** batch con Spark: ETL del histórico, calidad y Data Lake.
 
 ## Mis dos dimensiones
 
@@ -34,6 +34,9 @@ donde más se nota por qué hay que comparar contra el baseline.
    **alta / escaneo_red** solo.
 4. Notebook 03: % de SYN sin respuesta y la heurística de escaneo (orígenes
    que tocan muchos puertos en un mismo minuto).
+5. Capa batch, mi rol ([notebook 00](../notebooks/00_etl_batch_trcu.ipynb)):
+   calidad del histórico (0 nulos, 0 duplicados, 0 negativos), Silver y Gold
+   en Parquet particionado por fecha, y el `PartitionFilters` del *partition pruning*.
 
 ## Mi decisión propia
 
@@ -50,6 +53,8 @@ GBT que en test quedaba 66 % peor que la persistencia.
 - **¿Por qué la división es cronológica y no aleatoria?** Con `randomSplit` el
   modelo vería minutos del futuro al entrenar (fuga de información) y las
   métricas serían optimistas e irreales.
+- **¿Para qué particionar por fecha?** Para que una consulta de un día lea
+  solo esa carpeta y no los 43 días: el plan físico lo muestra en `PartitionFilters`.
 - **¿Qué pasa si el modelo deja de servir?** Se reentrena cada 6 h con lo nuevo,
   y el panel "Error absoluto en vivo" muestra si el modelo empieza a
   equivocarse más que la persistencia en producción.

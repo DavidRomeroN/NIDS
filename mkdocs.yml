@@ -45,8 +45,8 @@ plugins:
       include_source: true
 
 nav:
-  - Inicio: index.md
   - Brief del proyecto: brief.md
+  - Inicio: index.md
   - Arquitectura: arquitectura.md
   - Componentes:
       - Sensor Raspberry Pi: sensor.md

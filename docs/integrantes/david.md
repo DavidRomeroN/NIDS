@@ -1,6 +1,6 @@
 # David Romero Nina — Volumen de tráfico
 
-**Énfasis en el equipo:** sensor (Raspberry Pi), despliegue en la nube.
+**Rol en el equipo:** BI/ML, sensor (Raspberry Pi) y despliegue en la nube.
 
 ## Mis dos dimensiones
 

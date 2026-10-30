@@ -4,7 +4,7 @@
 
 `TRCU.csv`: **397 354 flujos** capturados en la universidad entre el 1 de julio
 y el 1 de septiembre de 2026 (43 días con datos, 34 751 minutos), extraídos con
-NTLFlowLyzer. 85 columnas por flujo: 5-tupla, tiempos, conteos y largos de
+NTLFlowLyzer. 83 columnas por flujo: 5-tupla, tiempos, conteos y largos de
 paquetes por sentido, tiempos entre llegadas, flags TCP, ventanas TCP. Todas
 las filas tienen `label = NeedLabel`: **no hay etiquetas**.
 

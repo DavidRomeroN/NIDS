@@ -43,7 +43,7 @@ flowchart LR
 
 | Sección | Contenido |
 |---|---|
-| [Brief del proyecto](brief.md) | Problema, pregunta central, dimensiones por integrante, fuentes |
+| [Brief del proyecto](brief.md) | Equipo y roles, pregunta central, las 8 dimensiones con sus fichas y requisitos, evolución desde la U1 |
 | [Arquitectura](arquitectura.md) | Lambda, componentes, decisiones técnicas |
 | [Sensor Raspberry Pi](sensor.md) | Captura pasiva, retención, telemetría, túnel |
 | [Ingesta y contratos](ingesta.md) | Tópicos de Kafka y contratos de evento versionados |
@@ -65,5 +65,5 @@ flowchart LR
 | Histórico TRCU.csv (397 354 flujos, 1-jul a 1-sep-2026) | ✅ Procesado |
 | Modelos de serie de tiempo (4 indicadores) | ✅ Entrenados y en vivo |
 | Detector K-Means por flujo | ✅ Entrenado y en vivo |
-| Sensor Raspberry Pi 5 | Configurado; se conecta al puerto espejo del laboratorio el 30-oct-2026 |
+| Sensor Raspberry Pi 5 | ✅ Probado de punta a punta; se instala en la U el 30-oct-2026 |
 | Tablero Grafana | ✅ Público con contraseña |

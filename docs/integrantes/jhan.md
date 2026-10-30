@@ -1,6 +1,6 @@
 # Jhan Logan Ramos Quispe — Consultas DNS
 
-**Énfasis en el equipo:** observabilidad y costos.
+**Rol en el equipo:** streaming y Kafka: tópicos, contratos y evento empresarial.
 
 ## Mis dos dimensiones
 
@@ -25,37 +25,43 @@
 GBT quedó apenas mejor. No se cambia el ganador mirando el test: eso sería
 contaminar la evaluación.
 
-## Observabilidad (mi énfasis)
+## El evento empresarial: `incidentes-seguridad` (mi rol)
 
-| Señal | Panel | Qué indica |
-|---|---|---|
-| Lag Kafka → Spark | "Lag Kafka -> Spark" | Primera alarma de backpressure: Kafka ya tiene datos que Spark no procesó |
-| Duración del micro-batch | "Duración de micro-batch" | Si supera el trigger (20 s), el pipeline no da abasto |
-| Latencia extremo a extremo | "Latencia extremo a extremo" | Desde que termina la ventana hasta Grafana |
-| Último archivo del sensor | "Segundos desde el último archivo" | Verde < 2 min, rojo > 5 min: el Pi se cayó o perdió red |
-| Interfaz espejo vs pipeline | "Interfaz espejo vs pipeline" | Si divergen, se están perdiendo datos entre el Pi y Spark |
-| CPU / RAM de la VM | "Uso de la VM" | Base de la estimación de costos y del escalado |
+- **Contrato v1.1** (ver [Ingesta](../ingesta.md)): `incidenteId` como key, para
+  que apertura y cierre del mismo ticket caigan en la misma partición y en orden.
+- **Dos productores:** la mesa de TI (`productor_incidentes.py`, con el ritmo
+  de un horario de clases) y **el propio modelo** (Spark, `reportadoPor:
+  nids-modelo`).
+- **Procesamiento:** tickets abiertos por severidad y origen, MTTR de los
+  últimos 50, y ventana **deslizante** de 5 min cada 1 min.
 
 ## Qué muestro en mi demo (3 min)
 
-1. Grafana "Dimensión 4": DNS real vs predicción vs persistencia.
-2. Fila de observabilidad: lag en 0, duración de batch y latencia; explico qué
-   alarma sonaría primero ante backpressure.
-3. [Costos](../costos.md): cuánto cuesta hoy y cuánto costaría escalar a todo el campus.
+1. Publico un incidente en vivo y lo sigo por todo el pipeline:
+   ```bash
+   docker compose exec incidentes python productor_incidentes.py --uno --severidad critica --categoria escaneo_red
+   docker compose logs --tail 3 spark-streaming | grep incidentes
+   ```
+   Se ve el offset/partición en el log del productor, el `batch_procesado` en
+   Spark y el panel "Incidentes abiertos" sube a los pocos segundos.
+2. Kafka UI (túnel SSH): los 3 tópicos, sus particiones y mensajes.
+3. Grafana "Dimensión 4": DNS real vs predicción vs persistencia.
 4. Notebook 04: hosts que más consultan DNS y el p99 del tamaño de pregunta.
 
 ## Mi decisión propia
 
-Medir la **salud del sensor** como parte de la observabilidad: si el Pi deja de
-enviar, el pipeline "se ve sano" (lag 0) pero está ciego. El panel "Segundos
-desde el último archivo" detecta eso.
+Que el **modelo genere el evento de negocio**: un incidente automático con
+evidencia legible y un limitador de 10 minutos por motivo, para que una ráfaga
+de anomalías sea un ticket y no cincuenta.
 
 ## Preguntas que me pueden hacer
 
-- **¿Qué métrica te avisa primero de backpressure?** El lag de Kafka hacia Spark:
-  mide directamente lo pendiente. La duración del batch avisa después.
-- **¿Por qué Pushgateway?** Spark Streaming en Python no expone un endpoint que
-  Prometheus pueda leer; Pushgateway es un atajo pragmático. Lo recomendado
-  sería el PrometheusServlet de Spark o un exporter propio.
-- **¿Costo streaming vs batch?** El batch paga por corrida y puede ir de noche;
-  el streaming paga 24/7 y se dimensiona por el pico, no por el promedio.
+- **¿Diferencia entre el contrato empresarial y el del sensor?** El incidente es
+  poco frecuente, de alto valor y cambia de estado (abierto → cerrado): key =
+  `incidenteId`. La telemetría es frecuente (5 s) y de bajo valor individual:
+  key = `sensorId`, para mantener el orden por dispositivo.
+- **¿Qué es un consumer group y un offset en tu pipeline?** Spark lleva sus
+  propios offsets en el checkpoint de cada consulta; por eso al reiniciar sigue
+  donde quedó sin perder ni repetir lo confirmado.
+- **¿Por qué 3 particiones?** Permite paralelizar la lectura y mantiene el
+  orden por key; para el volumen de un laboratorio sobra.

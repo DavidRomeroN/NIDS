@@ -17,18 +17,18 @@ conviertan en incidentes?
 ## 2. Secuencia de la demo
 
 1. **Evolución:** del histórico TRCU.csv (batch, U1) al sensor en vivo (U2).
-2. **Evento empresarial en vivo** (Nick):
+2. **Evento empresarial en vivo** (Jhan, streaming y Kafka):
    ```bash
    docker compose exec incidentes python productor_incidentes.py --uno --severidad critica --categoria escaneo_red
    ```
-3. **Evento IoT en vivo:** `docker compose logs -f bridge` (telemetría del Pi cada 5 s).
-4. **Ventana + watermark + checkpoint en logs:**
+3. **Evento IoT en vivo** (David, sensor): `docker compose logs -f bridge` (telemetría del Pi cada 5 s).
+4. **Ventana + watermark + checkpoint en logs** (Jhan):
    ```bash
    docker compose logs spark-streaming | grep observabilidad | tail -5
    ```
-5. **Observabilidad y costos** (Jhan): filas de observabilidad y [costos](costos.md).
-6. **Modelos validados** (Henyelrey): fila "Modelos" del tablero y [Modelos](modelos.md).
-7. **BI con predicción junto a KPIs** (David): Resumen + Dimensión 1.
+5. **Arquitectura, observabilidad y costos** (Nick): filas de observabilidad y [costos](costos.md).
+6. **Capa batch** (Henyelrey): notebook 00, calidad del histórico, Parquet particionado y *partition pruning*.
+7. **Modelos validados y BI con predicción junto a KPIs** (David): fila "Modelos", Resumen y Dimensión 1.
 8. **Decisión propia del equipo:** el modelo abre incidentes solo, con
    evidencia legible y limitador de 10 min; y la escala log + validación
    cruzada temporal que corrigió un modelo que en test era 66 % peor que la persistencia.
