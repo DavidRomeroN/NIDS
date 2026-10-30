@@ -99,3 +99,4 @@ print("\nVariables más importantes:", m["importancia_variables"])
 # - **U2 (por minuto):** acá la persistencia ya es fuerte (R² 0,79); LR y RF
 #   quedan PEOR que ella y solo el GBT la supera (+11,7 %). Si el SYN real
 #   supera la predicción + 3·RMSE, Spark abre solo un incidente **alta / escaneo_red**.
+#   siempre estuve ahi.
