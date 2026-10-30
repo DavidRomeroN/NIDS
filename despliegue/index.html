@@ -1500,9 +1500,12 @@ ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span cl
 </code></pre></div>
 <p>Desde ese momento el Pi es <strong>enchufar y listo</strong>: al encender monta el disco,
 sincroniza la hora, captura, abre el túnel y sube.</p>
-<p><strong>En el laboratorio:</strong> <code>eth0</code> va al puerto espejo, que no da internet; la
-subida va por WiFi. Cada red se guarda una vez (pide nombre y clave por
-teclado, nada queda en el repositorio):</p>
+<p><strong>En el laboratorio:</strong> el puerto de red del Pi (<code>eth0</code>) va al puerto espejo,
+que no da internet. La subida 24/7 va por un <strong>adaptador USB a Ethernet</strong>
+conectado a un puerto normal del switch: se enchufa y toma DHCP solo. Como
+respaldo (por ejemplo, el hotspot del celular durante una demo) se guardan
+redes WiFi, una vez cada una (pide nombre y clave por teclado, nada queda en
+el repositorio):</p>
 <div class="highlight"><pre><span></span><code>scp<span class="w"> </span>pi/bin/nids-wifi.sh<span class="w"> </span>david@&lt;IP_PI&gt;:
 ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span class="w"> </span>bash<span class="w"> </span>nids-wifi.sh<span class="w"> </span>celular<span class="w"> </span><span class="m">10</span><span class="w">    </span><span class="c1"># hotspot del celular</span>
 ssh<span class="w"> </span>-t<span class="w"> </span>david@&lt;IP_PI&gt;<span class="w"> </span>bash<span class="w"> </span>nids-wifi.sh<span class="w"> </span>campus<span class="w"> </span><span class="m">20</span><span class="w">     </span><span class="c1"># WiFi del campus (WPA2 con clave)</span>

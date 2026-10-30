@@ -1475,17 +1475,28 @@ proyecto que está físicamente en el campus.</p>
 <td>PCAP locales</td>
 </tr>
 <tr>
-<td><code>eth0</code></td>
+<td><code>eth0</code> (puerto del Pi)</td>
 <td>Puerto espejo (sin IP, modo promiscuo)</td>
 <td>Interfaz de captura</td>
 </tr>
 <tr>
+<td>Adaptador USB 3.0 a Ethernet</td>
+<td>Puerto normal del switch, con DHCP e internet</td>
+<td>Subida a la nube 24/7</td>
+</tr>
+<tr>
 <td><code>wlan0</code></td>
-<td>WiFi del campus o hotspot del celular (<code>pi/bin/nids-wifi.sh</code>)</td>
-<td>Subida a la nube</td>
+<td>Hotspot del celular o WiFi del campus (<code>pi/bin/nids-wifi.sh</code>)</td>
+<td>Respaldo de la subida</td>
 </tr>
 </tbody>
 </table>
+<p>El Pi 5 trae un solo puerto de red y ese queda en el espejo, que no da
+internet. Por eso la subida va por un segundo cable con un adaptador USB: no
+necesita configuración (NetworkManager le da DHCP al enchufarlo) y la captura
+igual excluye el tráfico hacia la nube (<code>FILTRO_BPF="not host &lt;VM&gt;"</code>). Al
+switch se le piden dos puertos: el espejo y uno normal con salida TCP al 22
+(o 443) hacia la VM.</p>
 <h2 id="3-servicios-systemd">3. Servicios (systemd)<a class="headerlink" href="#3-servicios-systemd" title="Permanent link">&para;</a></h2>
 <p>Todos arrancan solos al enchufar el Pi y se reinician si fallan.</p>
 <table>
