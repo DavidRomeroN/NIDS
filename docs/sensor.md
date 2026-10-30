@@ -13,8 +13,16 @@ proyecto que está físicamente en el campus.
 | Raspberry Pi 5 | 4× Cortex-A76 2,4 GHz, 8 GB RAM, 1 GbE | Captura |
 | microSD 128 GB | Raspberry Pi OS Lite 64-bit | Sistema operativo y PCAP mientras no haya disco USB (tope 70 %) |
 | Disco USB 3.0 | Disco externo de escritorio (6 meses de tesis) | PCAP locales |
-| `eth0` | Puerto espejo (sin IP, modo promiscuo) | Interfaz de captura |
-| `wlan0` | WiFi del campus o hotspot del celular (`pi/bin/nids-wifi.sh`) | Subida a la nube |
+| `eth0` (puerto del Pi) | Puerto espejo (sin IP, modo promiscuo) | Interfaz de captura |
+| Adaptador USB 3.0 a Ethernet | Puerto normal del switch, con DHCP e internet | Subida a la nube 24/7 |
+| `wlan0` | Hotspot del celular o WiFi del campus (`pi/bin/nids-wifi.sh`) | Respaldo de la subida |
+
+El Pi 5 trae un solo puerto de red y ese queda en el espejo, que no da
+internet. Por eso la subida va por un segundo cable con un adaptador USB: no
+necesita configuración (NetworkManager le da DHCP al enchufarlo) y la captura
+igual excluye el tráfico hacia la nube (`FILTRO_BPF="not host <VM>"`). Al
+switch se le piden dos puertos: el espejo y uno normal con salida TCP al 22
+(o 443) hacia la VM.
 
 ## 3. Servicios (systemd)
 

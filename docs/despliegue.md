@@ -65,9 +65,12 @@ sudo ./desplegar.sh --clave-pi "ssh-ed25519 AAAA... root@nids-pi-01"
 Desde ese momento el Pi es **enchufar y listo**: al encender monta el disco,
 sincroniza la hora, captura, abre el túnel y sube.
 
-**En el laboratorio:** `eth0` va al puerto espejo, que no da internet; la
-subida va por WiFi. Cada red se guarda una vez (pide nombre y clave por
-teclado, nada queda en el repositorio):
+**En el laboratorio:** el puerto de red del Pi (`eth0`) va al puerto espejo,
+que no da internet. La subida 24/7 va por un **adaptador USB a Ethernet**
+conectado a un puerto normal del switch: se enchufa y toma DHCP solo. Como
+respaldo (por ejemplo, el hotspot del celular durante una demo) se guardan
+redes WiFi, una vez cada una (pide nombre y clave por teclado, nada queda en
+el repositorio):
 
 ```bash
 scp pi/bin/nids-wifi.sh david@<IP_PI>:
