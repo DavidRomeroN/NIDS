@@ -1,0 +1,1985 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Sistema Big Data para detectar a tiempo comportamientos anómalos en el tráfico de red de un laboratorio de la UPeU.">
+      
+      
+        <meta name="author" content="Nick Mayta, David Romero, Henyelrey Garcia, Jhan Ramos">
+      
+      
+      
+        <link rel="prev" href="../batch/">
+      
+      
+        <link rel="next" href="../dashboard/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Modelos de ML - NIDS campus — tráfico de red en tiempo real</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#modelos-de-machine-learning" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="NIDS campus — tráfico de red en tiempo real" class="md-header__button md-logo" aria-label="NIDS campus — tráfico de red en tiempo real" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            NIDS campus — tráfico de red en tiempo real
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Modelos de ML
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DavidRomeroN/NIDS" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DavidRomeroN/NIDS
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="NIDS campus — tráfico de red en tiempo real" class="md-nav__button md-logo" aria-label="NIDS campus — tráfico de red en tiempo real" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    NIDS campus — tráfico de red en tiempo real
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DavidRomeroN/NIDS" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DavidRomeroN/NIDS
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brief del proyecto
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../arquitectura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitectura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Componentes
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Componentes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sensor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensor Raspberry Pi
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ingesta/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingesta y contratos (Kafka)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Procesamiento streaming (Spark)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capa batch (Data Lake)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos de ML
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos de ML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-series-de-tiempo-una-por-integrante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Series de tiempo: una por integrante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Series de tiempo: una por integrante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-dataset-supervisado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Dataset supervisado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-protocolo-de-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Protocolo de validación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-resultados-en-test-datos-reales-30-oct-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Resultados en test (datos reales, 30-oct-2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 En producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-detector-de-anomalias-por-flujo-k-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Detector de anomalías por flujo (K-Means)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Detector de anomalías por flujo (K-Means)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-variables-por-flujo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Variables por flujo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-eleccion-de-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Elección de k
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-puntaje-y-umbral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Puntaje y umbral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cierre-del-ciclo-del-modelo-al-negocio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Cierre del ciclo: del modelo al negocio
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tablero Grafana
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observabilidad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observabilidad
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../costos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Costos y escalado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrantes
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Integrantes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrantes/david/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    David Romero — volumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrantes/nick/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nick Mayta — conexiones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrantes/henyelrey/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Henyelrey Garcia — SYN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrantes/jhan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Jhan Ramos — DNS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks (PySpark)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Notebooks (PySpark)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/00_etl_batch_trcu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    00 · Capa batch: ETL del histórico TRCU.csv
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/01_david_volumen_trafico/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · David Romero Nina — Volumen de tráfico
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/02_nick_conexiones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Nick Saim Mayta Jara — Conexiones (flujos)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/03_henyelrey_intentos_syn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Henyelrey Lucio Garcia Chura — Intentos de conexión (SYN)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/04_jhan_consultas_dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Jhan Logan Ramos Quispe — Consultas DNS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operación
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operación
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../despliegue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Despliegue reproducible
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seguridad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seguridad y privacidad
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluación
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Evaluación
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rubrica/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rúbrica y evidencias
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sustentacion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guion de sustentación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-series-de-tiempo-una-por-integrante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Series de tiempo: una por integrante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Series de tiempo: una por integrante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-dataset-supervisado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Dataset supervisado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-protocolo-de-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Protocolo de validación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-resultados-en-test-datos-reales-30-oct-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Resultados en test (datos reales, 30-oct-2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 En producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-detector-de-anomalias-por-flujo-k-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Detector de anomalías por flujo (K-Means)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Detector de anomalías por flujo (K-Means)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-variables-por-flujo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Variables por flujo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-eleccion-de-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Elección de k
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-puntaje-y-umbral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Puntaje y umbral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cierre-del-ciclo-del-modelo-al-negocio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Cierre del ciclo: del modelo al negocio
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="modelos-de-machine-learning">Modelos de Machine Learning<a class="headerlink" href="#modelos-de-machine-learning" title="Permanent link">&para;</a></h1>
+<p>El proyecto tiene <strong>dos familias de modelos</strong>, ambas entrenadas con Spark MLlib
+sobre el histórico real <code>TRCU.csv</code> y aplicadas en vivo dentro de Spark
+Structured Streaming:</p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Pregunta</th>
+<th>Tipo</th>
+<th>Unidad</th>
+<th>Código</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Series de tiempo (×4)</td>
+<td>¿Cuánto habrá el minuto siguiente?</td>
+<td>Regresión supervisada</td>
+<td>minuto</td>
+<td><code>entrenar_series.py</code></td>
+</tr>
+<tr>
+<td>Detector de anomalías</td>
+<td>¿Esta conexión es rara?</td>
+<td>Clustering no supervisado</td>
+<td>flujo</td>
+<td><code>entrenar_anomalias.py</code></td>
+</tr>
+</tbody>
+</table>
+<p>¿Por qué no un clasificador de ataques? Porque <strong>el histórico no tiene
+etiquetas</strong> (<code>label = NeedLabel</code> en el 100 % de las filas). Entrenar un
+clasificador exigiría inventar etiquetas. Las series de tiempo usan como
+"etiqueta" el propio valor del minuto siguiente, y el K-Means no necesita etiquetas.</p>
+<h2 id="1-series-de-tiempo-una-por-integrante">1. Series de tiempo: una por integrante<a class="headerlink" href="#1-series-de-tiempo-una-por-integrante" title="Permanent link">&para;</a></h2>
+<h3 id="11-dataset-supervisado">1.1 Dataset supervisado<a class="headerlink" href="#11-dataset-supervisado" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Fuente:</strong> <code>historico_minuto</code> (TRCU.csv) más <code>trafico_minuto</code> (lo que ya llegó en vivo).</li>
+<li><strong>Objetivo:</strong> <code>lead(indicador, 1)</code>, el valor del minuto siguiente.</li>
+<li><strong>Solo pares de minutos consecutivos:</strong> si el sensor estuvo apagado, el
+  "minuto siguiente" no existe y la fila se descarta.</li>
+<li><strong>26 316 filas</strong> útiles.</li>
+</ul>
+<p><strong>Variables (32):</strong>
+- <strong>Estado del minuto (12):</strong> paquetes, bytes, flujos, hosts, tcp, udp, dns,
+  bytes_tls, syn, bytes_externos, hora y día de la semana.
+- <strong>Rezagos (20):</strong>
+  - <code>lag1</code>, <code>lag2</code> y <code>lag3</code> de cada uno de los 4 indicadores;
+  - la media móvil de 5 minutos de cada indicador;
+  - <code>gap_min</code>, los minutos desde la fila anterior.</p>
+<p>Los rezagos se calculan con funciones de ventana en batch (<code>con_rezagos()</code>) y
+con una memoria de 5 filas en streaming (<code>rezagos_fila()</code>). Las dos implementaciones son equivalentes.</p>
+<h3 id="12-protocolo-de-validacion">1.2 Protocolo de validación<a class="headerlink" href="#12-protocolo-de-validacion" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    A["0 %"] --- B["50 %"] --- C["60 %"] --- D["70 %"] --- E["80 %"] --- F["100 %"]
+    subgraph CV["Validación cruzada temporal (rolling origin)"]
+      direction LR
+      c1["corte 1: entrena 0-50 %, valida 50-60 %"]
+      c2["corte 2: entrena 0-60 %, valida 60-70 %"]
+      c3["corte 3: entrena 0-70 %, valida 70-80 %"]
+    end
+    T["TEST: 80-100 %&lt;br/&gt;no se toca hasta el final"]</code></pre>
+<ol>
+<li><strong>Test = el último 20 % del tiempo</strong> (5264 minutos). No participa en ninguna decisión.</li>
+<li><strong>Selección de hiperparámetros con validación cruzada temporal</strong>, en 3
+   cortes que siempre entrenan con el pasado y validan con el futuro inmediato. Nunca se usa <code>randomSplit</code>.</li>
+<li><strong>Grilla de búsqueda</strong>, de 12 configuraciones por indicador (36 entrenamientos):</li>
+<li>LinearRegression: <code>regParam</code> ∈ {0, 0,1}</li>
+<li>RandomForest: <code>maxDepth</code> ∈ {6, 10}, con 40 árboles</li>
+<li>GBT: <code>maxDepth</code> ∈ {3, 5}, con 50 iteraciones</li>
+<li>y para cada uno, la <strong>escala</strong>: original o <code>log1p</code>/<code>expm1</code>.</li>
+<li><strong>Ganador:</strong> el de menor RMSE promedio en validación. Se reentrena con todo
+   lo anterior al test y se evalúa una sola vez en el test.</li>
+<li><strong>Baseline obligatorio: persistencia</strong> (el minuto siguiente es igual al actual).</li>
+</ol>
+<p><strong>Por qué la escala logarítmica.</strong> El tráfico tiene cola pesada: la mayoría de
+los minutos son tranquilos y unos pocos tienen picos de MB. En escala original,
+los árboles persiguen los picos y fallan en el resto. Aprender en <code>log1p</code> y
+volver con <code>expm1</code> lo estabiliza. Se deja como hiperparámetro y que decida la validación.</p>
+<h3 id="13-resultados-en-test-datos-reales-30-oct-2026">1.3 Resultados en test (datos reales, 30-oct-2026)<a class="headerlink" href="#13-resultados-en-test-datos-reales-30-oct-2026" title="Permanent link">&para;</a></h3>
+<p><strong>Tabla 1. RMSE en test y mejora sobre la persistencia</strong></p>
+<table>
+<thead>
+<tr>
+<th>Integrante</th>
+<th>Indicador</th>
+<th style="text-align: right;">Persistencia</th>
+<th style="text-align: right;">LinearRegression</th>
+<th style="text-align: right;">RandomForest</th>
+<th style="text-align: right;">GBT</th>
+<th>Ganador (por CV)</th>
+<th style="text-align: right;">Mejora</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>David</td>
+<td>bytes/min</td>
+<td style="text-align: right;">148 264</td>
+<td style="text-align: right;">126 100</td>
+<td style="text-align: right;">126 945</td>
+<td style="text-align: right;"><strong>124 294</strong></td>
+<td>GBT, log, prof. 3</td>
+<td style="text-align: right;"><strong>+16,2 %</strong></td>
+</tr>
+<tr>
+<td>Nick</td>
+<td>flujos/min</td>
+<td style="text-align: right;">10,32</td>
+<td style="text-align: right;">6,67</td>
+<td style="text-align: right;"><strong>5,60</strong></td>
+<td style="text-align: right;">6,29</td>
+<td>RF, original, prof. 10</td>
+<td style="text-align: right;"><strong>+45,8 %</strong></td>
+</tr>
+<tr>
+<td>Henyelrey</td>
+<td>SYN/min</td>
+<td style="text-align: right;">1,139</td>
+<td style="text-align: right;">2,313</td>
+<td style="text-align: right;">1,976</td>
+<td style="text-align: right;"><strong>1,006</strong></td>
+<td>GBT, log, prof. 5</td>
+<td style="text-align: right;"><strong>+11,6 %</strong></td>
+</tr>
+<tr>
+<td>Jhan</td>
+<td>DNS/min</td>
+<td style="text-align: right;">0,734</td>
+<td style="text-align: right;">0,595</td>
+<td style="text-align: right;">0,604</td>
+<td style="text-align: right;"><strong>0,593</strong></td>
+<td>RF, log, prof. 6</td>
+<td style="text-align: right;"><strong>+17,6 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tabla 2. MAE y R² en test del ganador frente a la persistencia</strong></p>
+<table>
+<thead>
+<tr>
+<th>Indicador</th>
+<th style="text-align: right;">MAE persistencia</th>
+<th style="text-align: right;">MAE ganador</th>
+<th style="text-align: right;">R² persistencia</th>
+<th style="text-align: right;">R² ganador</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bytes</td>
+<td style="text-align: right;">24 340</td>
+<td style="text-align: right;">13 997 (−43 %)</td>
+<td style="text-align: right;">−0,33</td>
+<td style="text-align: right;">0,06</td>
+</tr>
+<tr>
+<td>flujos</td>
+<td style="text-align: right;">6,76</td>
+<td style="text-align: right;">2,93 (−57 %)</td>
+<td style="text-align: right;">−0,24</td>
+<td style="text-align: right;">0,63</td>
+</tr>
+<tr>
+<td>syn</td>
+<td style="text-align: right;">0,254</td>
+<td style="text-align: right;">0,218 (−14 %)</td>
+<td style="text-align: right;">0,79</td>
+<td style="text-align: right;">0,84</td>
+</tr>
+<tr>
+<td>dns</td>
+<td style="text-align: right;">0,170</td>
+<td style="text-align: right;">0,144 (−15 %)</td>
+<td style="text-align: right;">−0,23</td>
+<td style="text-align: right;">0,17</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lectura honesta:</strong>
+- <strong>Los 4 modelos le ganan a la persistencia en un test que nunca vieron.</strong> Por eso se justifican.
+- <strong>Flujos</strong> es el indicador más predecible (R² 0,63).
+- En <strong>bytes</strong>, el R² es bajo (0,06): los picos de descarga son difíciles de anticipar
+  un minuto antes. Aun así el error típico (MAE) baja 43 %.
+- En <strong>SYN</strong>, la persistencia ya era buena (R² 0,79), y el modelo la mejora sin empeorarla.
+- En <strong>DNS</strong>, la validación eligió RF y en test GBT quedó apenas mejor (0,593
+  contra 0,604). Se respeta la elección de la validación: elegir mirando el test sería hacer trampa.</p>
+<p><strong>Variables más importantes:</strong>
+- en <strong>flujos</strong>, los rezagos de flujos (<code>lag3_flujos</code>, <code>media5_flujos</code>);
+- en <strong>bytes</strong>, los minutos desde el dato anterior y los rezagos de flujos y bytes;
+- en <strong>DNS</strong>, la media móvil de DNS.</p>
+<p>Es decir, la memoria reciente es lo que más predice, y es justo lo que el modelo sin rezagos no tenía.</p>
+<h3 id="14-en-produccion">1.4 En producción<a class="headerlink" href="#14-en-produccion" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Reentrenamiento automático cada 6 h con el histórico más lo que llegó en vivo.</li>
+<li><code>streaming_nids.py</code> recarga el modelo nuevo sin reiniciar.</li>
+<li><strong>Anomalía de serie de tiempo:</strong> <code>real &gt; predicción + 3·RMSE_test</code>. Abre un
+  incidente (<code>anomalia_trafico</code>, o <code>escaneo_red</code> si es SYN).</li>
+</ul>
+<h2 id="2-detector-de-anomalias-por-flujo-k-means">2. Detector de anomalías por flujo (K-Means)<a class="headerlink" href="#2-detector-de-anomalias-por-flujo-k-means" title="Permanent link">&para;</a></h2>
+<h3 id="21-variables-por-flujo">2.1 Variables por flujo<a class="headerlink" href="#21-variables-por-flujo" title="Permanent link">&para;</a></h3>
+<p>Escala logarítmica, porque bytes y paquetes van de 1 a millones:</p>
+<ul>
+<li>paquetes de ida y de vuelta;</li>
+<li>bytes de ida y de vuelta;</li>
+<li>duración en ms;</li>
+<li>cantidad de SYN (con tope de 10);</li>
+<li>si es TCP o UDP;</li>
+<li>si el puerto es conocido (&lt; 1024);</li>
+<li>si el destino está dentro del campus.</li>
+</ul>
+<p>Todas pasan por un <code>StandardScaler</code> con media y desviación.</p>
+<h3 id="22-eleccion-de-k">2.2 Elección de k<a class="headerlink" href="#22-eleccion-de-k" title="Permanent link">&para;</a></h3>
+<p><strong>Tabla 3. Silhouette por k (muestra de 60 000 flujos)</strong></p>
+<table>
+<thead>
+<tr>
+<th>k</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;"><strong>6</strong></th>
+<th style="text-align: right;">8</th>
+<th style="text-align: right;">10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Silhouette</td>
+<td style="text-align: right;">0,780</td>
+<td style="text-align: right;"><strong>0,830</strong></td>
+<td style="text-align: right;">0,796</td>
+<td style="text-align: right;">0,830</td>
+</tr>
+</tbody>
+</table>
+<p>Se elige <strong>k = 6</strong>. Empata con k = 10, pero es más simple.</p>
+<h3 id="23-puntaje-y-umbral">2.3 Puntaje y umbral<a class="headerlink" href="#23-puntaje-y-umbral" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Puntaje de anomalía:</strong> la distancia euclidiana del flujo (escalado) al centro de su cluster.</li>
+<li><strong>Umbral:</strong> el <strong>percentil 99,5</strong> del puntaje en los 397 354 flujos
+  históricos, que da <strong>6,31</strong>. En el histórico, 1937 flujos lo superan (0,49 %).</li>
+<li>En vivo, un flujo con puntaje mayor a 6,31 es <strong>anómalo</strong>:</li>
+<li>se guarda en <code>lake/anomalias_flujo</code>;</li>
+<li>aparece en la tabla de flujos sospechosos de Grafana;</li>
+<li>si hay al menos uno en el micro-batch, abre un incidente (severidad alta si son 5 o más).</li>
+</ul>
+<p><strong>Tamaño de los clusters:</strong> 279 633 · 74 600 · 20 368 · 12 162 · 7386 · 3205
+flujos. Los clusters chicos agrupan comportamientos poco frecuentes, como
+conexiones largas o servicios raros.</p>
+<h2 id="3-cierre-del-ciclo-del-modelo-al-negocio">3. Cierre del ciclo: del modelo al negocio<a class="headerlink" href="#3-cierre-del-ciclo-del-modelo-al-negocio" title="Permanent link">&para;</a></h2>
+<p>Cuando cualquiera de los dos modelos detecta algo, Spark publica un evento
+<code>incidente.abierto</code> en <code>incidentes-seguridad</code> con:
+- <code>reportadoPor: "nids-modelo"</code>;
+- una <code>evidencia</code> legible (qué se observó y contra qué umbral).</p>
+<p>Hay un límite de un incidente por motivo cada 10 minutos. El evento empresarial
+deja de ser solo simulado y <strong>nace del propio modelo</strong>. En Grafana se separan
+los incidentes abiertos por la mesa de TI de los abiertos por el modelo.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  <script data-mkdocs-jupyter-mathjax="{&quot;url&quot;: &quot;https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js&quot;, &quot;version&quot;: 4}">
+/* Shared by full pages and Material's instant navigation. */
+(() => {
+  const config = JSON.parse(document.currentScript.dataset.mkdocsJupyterMathjax);
+  if (window.mkdocsJupyterMathJax) return;
+
+  let loading;
+  let queue = Promise.resolve();
+  let previous = [];
+
+  const ready = async () => {
+    if (!loading) {
+      loading = (async () => {
+        let math = window.MathJax;
+        if (!math?.typesetPromise) {
+          const url = new URL(config.url, document.baseURI).href;
+          const existing = Array.from(document.scripts).find(script =>
+            script.src && (script.src === url || script.id === 'MathJax-script' ||
+              (/mathjax/i.test(script.src) &&
+               /\/(?:MathJax|latest|(?:tex|mml)(?:-mml)?-(?:chtml|svg))\.js(?:[?#]|$)/i.test(script.src))));
+          if (existing) {
+            if (!math?.startup?.promise) {
+              await new Promise((resolve, reject) => {
+                existing.addEventListener('load', resolve, { once: true });
+                existing.addEventListener('error', reject, { once: true });
+              });
+            }
+          } else {
+            // Keep site macros, delimiters and startup hooks when supplied.
+            const options = math || {};
+            window.MathJax = {
+              ...options,
+              loader: {
+                ...options.loader,
+                load: Array.from(new Set(['ui/safe', ...(options.loader?.load || [])]))
+              },
+              startup: { typeset: false, ...options.startup },
+              tex: {
+                tags: 'ams',
+                useLabelIds: true,
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true,
+                ...options.tex
+              }
+            };
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = config.url;
+              script.id = 'MathJax-script';
+              script.async = true;
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+            });
+          }
+        }
+        math = window.MathJax;
+        await math.startup.promise;
+        return math;
+      })();
+    }
+    const math = await loading;
+    // A site owner can extend the v3 queue again on each navigation.
+    await math.startup.promise;
+    return math;
+  };
+
+  const unrendered = node => {
+    if (node.matches('mjx-container')) return [];
+    if (!node.querySelector('mjx-container')) return [node];
+    // In v3, scanning generated assistive MathML again produces nested output.
+    return Array.from(node.children).flatMap(unrendered);
+  };
+
+  const refresh = () => {
+    // A separate chain also serializes v3, without changing v4's startup promise.
+    queue = queue.then(async () => {
+      const notebooks = Array.from(document.querySelectorAll('.jupyter-wrapper'));
+      if (!notebooks.length && !previous.length) return;
+      if (notebooks.length === previous.length &&
+          notebooks.every((node, index) => node === previous[index])) return;
+      const math = await ready();
+      if (previous.length) {
+        math.typesetClear(previous);
+        math.texReset();
+      }
+      previous = notebooks.filter(node => node.isConnected);
+      const pending = previous.flatMap(unrendered);
+      if (pending.length) await math.typesetPromise(pending);
+    }).catch(error => console.error('mkdocs-jupyter: MathJax rendering failed', error));
+    return queue;
+  };
+
+  window.mkdocsJupyterMathJax = { refresh };
+  const start = () => {
+    if (typeof document$ !== 'undefined') document$.subscribe(refresh);
+    else refresh();
+  };
+  // Theme bundles and user-provided MathJax scripts can follow notebook content.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else start();
+})();
+
+</script>
+</body>
+</html>
