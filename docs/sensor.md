@@ -11,10 +11,10 @@ proyecto que está físicamente en el campus.
 | Equipo | Especificación | Rol |
 |---|---|---|
 | Raspberry Pi 5 | 4× Cortex-A76 2,4 GHz, 8 GB RAM, 1 GbE | Captura |
-| microSD | Raspberry Pi OS Lite 64-bit | Solo sistema operativo |
-| Disco USB 3.0 | Pendrive (pruebas) → disco externo de escritorio (6 meses) | PCAP locales |
+| microSD 128 GB | Raspberry Pi OS Lite 64-bit | Sistema operativo y PCAP mientras no haya disco USB (tope 70 %) |
+| Disco USB 3.0 | Disco externo de escritorio (6 meses de tesis) | PCAP locales |
 | `eth0` | Puerto espejo (sin IP, modo promiscuo) | Interfaz de captura |
-| Salida a internet | WiFi del campus / segundo cable | Subida a la nube |
+| `wlan0` | WiFi del campus o hotspot del celular (`pi/bin/nids-wifi.sh`) | Subida a la nube |
 
 ## 3. Servicios (systemd)
 

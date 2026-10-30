@@ -14,7 +14,7 @@ from kafka import KafkaProducer
 # horario de clases) y cierra cada ticket tras un tiempo de resolución
 # realista. Con --uno publica un solo incidente a mano, para la demo en vivo.
 #
-# Contrato de evento v1 (documentado en docs/contratos.md):
+# Contrato de evento v1 (documentado en docs/ingesta.md):
 #   version, tipoEvento (incidente.abierto | incidente.cerrado), incidenteId,
 #   severidad, categoria, laboratorio, reportadoPor, timestamp (ISO-8601 UTC),
 #   minutosResolucion (solo en incidente.cerrado)

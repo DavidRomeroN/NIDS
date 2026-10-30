@@ -104,6 +104,7 @@ services:
       DIR_ENTRADA: /srv/nids/incoming
       DIR_PROCESADOS: /srv/nids/procesados
       DIAS_RETENCION_PCAP: "3"
+      USO_MAXIMO_DISCO_PCT: "80"
       PUSHGATEWAY_URL: http://pushgateway:9091
       SECRETO_SEUDONIMO: ${SECRETO_SEUDONIMO}
     volumes:
@@ -120,6 +121,26 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: incidentes-seguridad
       TZ: America/Lima
+    depends_on:
+      - kafka
+
+  # Plan B de la demo, solo a mano: si el Pi no tiene internet en el
+  # laboratorio, reproduce TRCU.csv en tiempo real como sensor "replay-trcu".
+  #   docker compose --profile respaldo up -d reproductor   (encender)
+  #   docker compose --profile respaldo stop reproductor    (apagar)
+  reproductor:
+    build: ./app
+    container_name: nids-reproductor
+    profiles: ["respaldo"]
+    restart: "no"
+    command: python reproductor_historico.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: trafico-flujos
+      SECRETO_SEUDONIMO: ${SECRETO_SEUDONIMO}
+      TZ: America/Lima
+    volumes:
+      - /srv/nids/historico:/historico:ro
     depends_on:
       - kafka
 

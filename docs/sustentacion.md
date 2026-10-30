@@ -70,10 +70,37 @@ real sobre el umbral, la anomalía y el incidente `nids-modelo` en Grafana.
    son de negocio; "duración del batch" es técnica. Pushgateway es un atajo
    porque Spark Streaming en Python no expone un endpoint para Prometheus; lo
    recomendado es el PrometheusServlet de Spark o un exporter.
+8. **¿Por qué la inferencia guarda historial si podría ser sin estado?** Sin
+   rezagos el modelo perdía contra la persistencia (66 % peor en bytes). Con
+   5 filas por sensor en memoria le gana en los 4 indicadores, y esas filas se
+   reconstruyen del Data Lake al reiniciar ([Modelos](modelos.md#11-dataset-supervisado)).
+9. **¿Cómo predice si el tráfico real cambia?** Cada 6 h se reentrena con el
+   histórico más lo que llegó en vivo; si un modelo deja de ganarle a la
+   persistencia, el tablero lo muestra (mejora negativa).
 
-## 5. Antes de presentar (checklist)
+## 5. Plan B: el Pi no tiene internet en el laboratorio
+
+`eth0` está en el puerto espejo, que solo escucha, así que la subida a la nube
+va por WiFi. El Pi ya guarda la red del hotspot del celular (`pi/bin/nids-wifi.sh`).
+
+1. **Primero:** encender el hotspot del celular con el mismo nombre y la misma
+   clave. En 1 minuto el panel "Segundos desde el último archivo" vuelve a verde.
+2. **Si aun así no conecta:** encender el reproductor del histórico en la VM:
+   ```bash
+   docker compose --profile respaldo up -d reproductor
+   ```
+   Reproduce en tiempo real el tráfico de TRCU.csv del mismo día de la semana
+   y la misma hora, como sensor `replay-trcu`, por el mismo tópico y contrato.
+   Hay que **decirlo al jurado**: es tráfico real de la U, pero de julio.
+   El reentrenamiento lo excluye. Apagarlo al terminar:
+   ```bash
+   docker compose --profile respaldo stop reproductor
+   ```
+
+## 6. Antes de presentar (checklist)
 
 - [ ] Grafana abre (http://&lt;IP_VM&gt;:3000) y el panel "Segundos desde el último archivo" está en verde.
 - [ ] `docker compose ps`: todo `Up` (kafka-topicos aparece como `Exited (0)`, es normal).
+- [ ] Hotspot del celular encendido si el Pi no tiene otra salida a internet.
 - [ ] Túnel SSH listo para Kafka UI si lo piden.
 - [ ] Cada integrante abrió su notebook y su página.

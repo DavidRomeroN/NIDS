@@ -65,9 +65,20 @@ sudo ./desplegar.sh --clave-pi "ssh-ed25519 AAAA... root@nids-pi-01"
 Desde ese momento el Pi es **enchufar y listo**: al encender monta el disco,
 sincroniza la hora, captura, abre el túnel y sube.
 
-**En el laboratorio:** `eth0` va al puerto espejo; la salida a internet va por
-WiFi o un segundo cable. Si la red del campus bloquea el 22, en
-`/etc/nids/nids.conf` se cambia `VM_PUERTO=443`.
+**En el laboratorio:** `eth0` va al puerto espejo, que no da internet; la
+subida va por WiFi. Cada red se guarda una vez (pide nombre y clave por
+teclado, nada queda en el repositorio):
+
+```bash
+scp pi/bin/nids-wifi.sh david@<IP_PI>:
+ssh -t david@<IP_PI> bash nids-wifi.sh celular 10    # hotspot del celular
+ssh -t david@<IP_PI> bash nids-wifi.sh campus 20     # WiFi del campus (WPA2 con clave)
+```
+
+El Pi usa la de mayor prioridad que esté al alcance. Si la red del campus
+bloquea el 22, en `/etc/nids/nids.conf` se cambia `VM_PUERTO=443`. Si no hay
+ninguna red, el Pi igual captura y guarda en su disco; la demo tiene un plan B
+([Guion §5](sustentacion.md#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio)).
 
 ## 4. Verificación
 

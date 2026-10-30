@@ -3,6 +3,18 @@
 Cada criterio de evaluación del curso, con **dónde se verifica** en el sistema.
 Todo es verificable en vivo (logs, tablero, Kafka) o en el repositorio.
 
+## De cada sesión a nuestro sistema
+
+| Sesión | Capacidad | Cómo la resuelve el NIDS |
+|---|---|---|
+| S6 | Evento empresarial | Tickets de la mesa de TI en `incidentes-seguridad` (contrato v1.1); el modelo también los abre |
+| S7 | Evento IoT/sensor | Telemetría real del Raspberry Pi: MQTT → puente → `pi-telemetria` |
+| S8 | Streaming con Spark | 5 consultas: ventana fija y deslizante, watermark, checkpoint por consulta |
+| S9 | Observabilidad y costos | Lag de Kafka, duración de batch, latencia, salud del sensor y de la VM; costo real en Azure |
+| S10 | Series de tiempo | 4 modelos (uno por integrante) contra persistencia, validación cruzada temporal, inferencia por minuto |
+| S11 | BI/ML con KPIs | Un tablero con KPIs de red, predicción, error en vivo y RMSE de test lado a lado |
+| S12 | Pipeline ensamblado | Todo lo anterior corriendo 24/7 sobre tráfico real del laboratorio |
+
 ## Unidad 2 — Pipeline en tiempo real
 
 | # | Criterio | Evidencia verificable | Dónde |

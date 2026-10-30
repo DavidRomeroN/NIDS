@@ -35,6 +35,14 @@ clasificador exigiría inventar etiquetas. Las series de tiempo usan como
 Los rezagos se calculan con funciones de ventana en batch (`con_rezagos()`) y
 con una memoria de 5 filas en streaming (`rezagos_fila()`). Las dos implementaciones son equivalentes.
 
+**Decisión propia: inferencia con estado.** La forma más simple de inferir en
+streaming es sin estado: cada ventana se predice solo con su propia fila. La
+probamos y el modelo quedaba **peor que la persistencia** (en bytes, 66 % peor
+en test). Con los rezagos le gana en los 4 indicadores. El costo es guardar 5
+filas por sensor en el driver, que es poco. Para que un reinicio no las pierda,
+se reconstruyen desde el Data Lake (`precargar_historial()`) antes de procesar
+el primer lote.
+
 ### 1.2 Protocolo de validación
 
 ```mermaid

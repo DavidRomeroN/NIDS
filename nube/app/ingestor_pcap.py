@@ -25,6 +25,7 @@ KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "trafico-flujos")
 DIR_ENTRADA = Path(os.getenv("DIR_ENTRADA", "/srv/nids/incoming"))
 DIR_PROCESADOS = Path(os.getenv("DIR_PROCESADOS", "/srv/nids/procesados"))
 DIAS_RETENCION_PCAP = float(os.getenv("DIAS_RETENCION_PCAP", "3"))
+USO_MAXIMO_DISCO_PCT = float(os.getenv("USO_MAXIMO_DISCO_PCT", "80"))
 PUSHGATEWAY_URL = os.getenv("PUSHGATEWAY_URL", "http://pushgateway:9091")
 SECRETO = os.getenv("SECRETO_SEUDONIMO", "").encode("utf-8")
 
@@ -245,10 +246,15 @@ def procesar(producer, ruta):
 
 
 def limpiar_procesados():
+    # Por antigüedad y, si el disco se llena antes (laboratorio con mucho
+    # tráfico), por espacio: primero los más viejos. El PCAP original sigue
+    # en el disco del Pi; aquí solo es la copia de cabeceras ya procesada.
     limite = time.time() - DIAS_RETENCION_PCAP * 86400
-    for ruta in DIR_PROCESADOS.glob("*.pcap.gz"):
-        if ruta.stat().st_mtime < limite:
-            ruta.unlink()
+    for ruta in sorted(DIR_PROCESADOS.glob("*.pcap.gz"), key=lambda r: r.stat().st_mtime):
+        uso = shutil.disk_usage(DIR_PROCESADOS)
+        if ruta.stat().st_mtime >= limite and 100 * uso.used / uso.total < USO_MAXIMO_DISCO_PCT:
+            break
+        ruta.unlink()
 
 
 def main():

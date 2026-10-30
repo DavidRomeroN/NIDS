@@ -9,7 +9,7 @@ dentro del propio evento para poder evolucionarlo sin romper a los consumidores.
 |---|---|---|---|---:|---|
 | `incidentes-seguridad` | Evento empresarial (S6) | `productor_incidentes.py` (mesa de TI) | `incidenteId` | 3 | 72 h |
 | `pi-telemetria` | IoT/sensor (S7) | Raspberry Pi → MQTT → `bridge_mqtt_kafka.py` | `sensorId` | 3 | 72 h |
-| `trafico-flujos` | Sensor de red (lectura del Pi) | `ingestor_pcap.py` (PCAP de cabeceras → flujos) | `src_addr` (seudónimo) | 3 | 72 h |
+| `trafico-flujos` | Sensor de red (lectura del Pi) | `ingestor_pcap.py` (PCAP de cabeceras → flujos); plan B de la demo: `reproductor_historico.py` (sensor `replay-trcu`) | `src_addr` (seudónimo) | 3 | 72 h |
 
 ## 1. `incidentes-seguridad` — evento empresarial v1.1
 

@@ -38,6 +38,8 @@ MINIMO_FILAS = int(os.getenv("MINIMO_FILAS", "60"))
 MINUTOS_ENTRE_ENTRENAMIENTOS = float(os.getenv("MINUTOS_ENTRE_ENTRENAMIENTOS", "360"))
 
 FUENTES = ["historico_minuto", "trafico_minuto"]  # TRCU.csv (batch) + stream en vivo
+# El plan B de la demo reproduce TRCU.csv: ya está en historico_minuto, no es dato nuevo.
+SENSORES_EXCLUIDOS = ["replay-trcu"]
 COLUMNAS_MINUTO = ["ventana_inicio", "ventana_fin", "sensorId", "flujos", "paquetes", "bytes",
                    "hosts", "tcp", "udp", "dns", "bytes_tls", "syn", "bytes_externos"]
 
@@ -65,6 +67,7 @@ def dataset_supervisado(spark):
         union = union.unionByName(parte)
     df = (
         union
+        .where(~F.col("sensorId").isin(SENSORES_EXCLUIDOS))
         # foreachBatch es "al menos una vez": un reintento puede duplicar una ventana.
         .dropDuplicates(["sensorId", "ventana_inicio"])
         .withColumn("hora", F.hour("ventana_inicio").cast("double"))
