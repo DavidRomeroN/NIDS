@@ -1,0 +1,32 @@
+name: Publicar documentación (GitHub Pages)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Dependencias de MkDocs
+        run: pip install mkdocs mkdocs-material pymdown-extensions mkdocs-jupyter
+
+      - name: Copiar notebooks dentro de docs/
+        run: mkdir -p docs/notebooks && cp notebooks/*.ipynb docs/notebooks/
+
+      - name: Publicar en gh-pages
+        run: mkdocs gh-deploy --force

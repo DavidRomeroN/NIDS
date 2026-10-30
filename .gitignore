@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+site/
+docs/notebooks/
+# Capturas, histórico y modelos: nunca al repo (Ley 29733 + tamaño)
+*.pcap
+*.pcap.gz
+*.csv
+data/

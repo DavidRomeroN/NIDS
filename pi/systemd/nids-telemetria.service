@@ -1,0 +1,11 @@
+[Unit]
+Description=NIDS - telemetria del sensor por MQTT
+After=nids-tunel.service
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/nids/bin/nids-telemetria.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

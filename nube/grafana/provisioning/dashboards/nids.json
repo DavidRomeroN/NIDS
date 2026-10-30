@@ -1,0 +1,2455 @@
+{
+    "uid":  "nids-campus",
+    "title":  "NIDS campus - trafico de red en tiempo real",
+    "timezone":  "browser",
+    "refresh":  "30s",
+    "schemaVersion":  39,
+    "editable":  true,
+    "time":  {
+                 "to":  "now",
+                 "from":  "now-3h"
+             },
+    "tags":  [
+                 "nids",
+                 "big-data",
+                 "u2"
+             ],
+    "panels":  [
+                   {
+                       "id":  1,
+                       "type":  "row",
+                       "title":  "Resumen en vivo - red del laboratorio",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  0,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  2,
+                       "type":  "stat",
+                       "title":  "Throughput (Mbps)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  0,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"mbps\"})",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  3,
+                       "type":  "stat",
+                       "title":  "Hosts activos (min)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  4,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"hosts_activos\"})",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  4,
+                       "type":  "stat",
+                       "title":  "Paquetes / min",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  8,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"paquetes_min\"})",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  5,
+                       "type":  "stat",
+                       "title":  "Trafico cifrado (TLS)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  12,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "avg(nids_trafico_kpi{kpi=\"pct_trafico_cifrado\"})",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  6,
+                       "type":  "stat",
+                       "title":  "Incidentes abiertos",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  16,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_incidentes_abiertos)",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  7,
+                       "type":  "stat",
+                       "title":  "Anomalias detectadas ahora",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  1,
+                                       "w":  4,
+                                       "x":  20,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_anomalia)",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none",
+                                                            "thresholds":  {
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "value":  null,
+                                                                                                 "color":  "green"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  1,
+                                                                                                 "color":  "red"
+                                                                                             }
+                                                                                         ],
+                                                                               "mode":  "absolute"
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "background",
+                                       "graphMode":  "none",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  8,
+                       "type":  "row",
+                       "title":  "Dimension 1 (David Romero) - Volumen de trafico (bytes/min)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  5,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  9,
+                       "type":  "timeseries",
+                       "title":  "Real vs prediccion del minuto (modelo y persistencia)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  6,
+                                       "w":  14,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_valor{indicador=\"bytes\"})",
+                                           "legendFormat":  "Real"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"bytes\",modelo=\"ml\"} offset 1m)",
+                                           "legendFormat":  "Prediccion modelo"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"bytes\",modelo=\"persistencia\"} offset 1m)",
+                                           "legendFormat":  "Baseline persistencia"
+                                       },
+                                       {
+                                           "refId":  "D",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_umbral_anomalia{indicador=\"bytes\"})",
+                                           "legendFormat":  "Umbral de anomalia"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "decbytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  10,
+                       "type":  "timeseries",
+                       "title":  "Error absoluto en vivo",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  6,
+                                       "w":  5,
+                                       "x":  14,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (modelo) (nids_trafico_error_abs{indicador=\"bytes\"})",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "decbytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  11,
+                       "type":  "bargauge",
+                       "title":  "RMSE en test (ultimo 20 %, nunca visto)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  6,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  5
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_rmse{indicador=\"bytes\"}",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "decbytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  12,
+                       "type":  "stat",
+                       "title":  "Mejora vs persistencia",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  11,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  3
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_mejora_vs_persistencia_pct{indicador=\"bytes\"}",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  13,
+                       "type":  "row",
+                       "title":  "Dimension 2 (Nick Mayta) - Conexiones nuevas (flujos/min)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  14,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  14,
+                       "type":  "timeseries",
+                       "title":  "Real vs prediccion del minuto (modelo y persistencia)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  15,
+                                       "w":  14,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_valor{indicador=\"flujos\"})",
+                                           "legendFormat":  "Real"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"flujos\",modelo=\"ml\"} offset 1m)",
+                                           "legendFormat":  "Prediccion modelo"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"flujos\",modelo=\"persistencia\"} offset 1m)",
+                                           "legendFormat":  "Baseline persistencia"
+                                       },
+                                       {
+                                           "refId":  "D",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_umbral_anomalia{indicador=\"flujos\"})",
+                                           "legendFormat":  "Umbral de anomalia"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  15,
+                       "type":  "timeseries",
+                       "title":  "Error absoluto en vivo",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  15,
+                                       "w":  5,
+                                       "x":  14,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (modelo) (nids_trafico_error_abs{indicador=\"flujos\"})",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  16,
+                       "type":  "bargauge",
+                       "title":  "RMSE en test (ultimo 20 %, nunca visto)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  15,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  5
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_rmse{indicador=\"flujos\"}",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  17,
+                       "type":  "stat",
+                       "title":  "Mejora vs persistencia",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  20,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  3
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_mejora_vs_persistencia_pct{indicador=\"flujos\"}",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  18,
+                       "type":  "row",
+                       "title":  "Dimension 3 (Henyelrey Garcia) - Intentos de conexion TCP SYN (por min)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  23,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  19,
+                       "type":  "timeseries",
+                       "title":  "Real vs prediccion del minuto (modelo y persistencia)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  24,
+                                       "w":  14,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_valor{indicador=\"syn\"})",
+                                           "legendFormat":  "Real"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"syn\",modelo=\"ml\"} offset 1m)",
+                                           "legendFormat":  "Prediccion modelo"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"syn\",modelo=\"persistencia\"} offset 1m)",
+                                           "legendFormat":  "Baseline persistencia"
+                                       },
+                                       {
+                                           "refId":  "D",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_umbral_anomalia{indicador=\"syn\"})",
+                                           "legendFormat":  "Umbral de anomalia"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  20,
+                       "type":  "timeseries",
+                       "title":  "Error absoluto en vivo",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  24,
+                                       "w":  5,
+                                       "x":  14,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (modelo) (nids_trafico_error_abs{indicador=\"syn\"})",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  21,
+                       "type":  "bargauge",
+                       "title":  "RMSE en test (ultimo 20 %, nunca visto)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  24,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  5
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_rmse{indicador=\"syn\"}",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  22,
+                       "type":  "stat",
+                       "title":  "Mejora vs persistencia",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  29,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  3
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_mejora_vs_persistencia_pct{indicador=\"syn\"}",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  23,
+                       "type":  "row",
+                       "title":  "Dimension 4 (Jhan Ramos) - Consultas DNS (flujos al puerto 53 por min)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  32,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  24,
+                       "type":  "timeseries",
+                       "title":  "Real vs prediccion del minuto (modelo y persistencia)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  33,
+                                       "w":  14,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_valor{indicador=\"dns\"})",
+                                           "legendFormat":  "Real"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"dns\",modelo=\"ml\"} offset 1m)",
+                                           "legendFormat":  "Prediccion modelo"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_prediccion{indicador=\"dns\",modelo=\"persistencia\"} offset 1m)",
+                                           "legendFormat":  "Baseline persistencia"
+                                       },
+                                       {
+                                           "refId":  "D",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_umbral_anomalia{indicador=\"dns\"})",
+                                           "legendFormat":  "Umbral de anomalia"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  25,
+                       "type":  "timeseries",
+                       "title":  "Error absoluto en vivo",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  33,
+                                       "w":  5,
+                                       "x":  14,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (modelo) (nids_trafico_error_abs{indicador=\"dns\"})",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  26,
+                       "type":  "bargauge",
+                       "title":  "RMSE en test (ultimo 20 %, nunca visto)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  33,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  5
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_rmse{indicador=\"dns\"}",
+                                           "legendFormat":  "{{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  27,
+                       "type":  "stat",
+                       "title":  "Mejora vs persistencia",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  38,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  3
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_mejora_vs_persistencia_pct{indicador=\"dns\"}",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  28,
+                       "type":  "row",
+                       "title":  "Deteccion de anomalias por flujo (K-Means entrenado con TRCU.csv)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  41,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  29,
+                       "type":  "stat",
+                       "title":  "Flujos anomalos (ultimo micro-batch)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  42,
+                                       "w":  4,
+                                       "x":  0,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_flujos_anomalos)",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none",
+                                                            "thresholds":  {
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "value":  null,
+                                                                                                 "color":  "green"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  1,
+                                                                                                 "color":  "orange"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  10,
+                                                                                                 "color":  "red"
+                                                                                             }
+                                                                                         ],
+                                                                               "mode":  "absolute"
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "background",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  30,
+                       "type":  "stat",
+                       "title":  "% de flujos anomalos",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  42,
+                                       "w":  4,
+                                       "x":  4,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "avg(nids_flujos_pct_anomalos)",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  31,
+                       "type":  "timeseries",
+                       "title":  "Puntaje maximo vs umbral (distancia al centro del cluster)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  42,
+                                       "w":  16,
+                                       "x":  8,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "max(nids_flujos_puntaje_max)",
+                                           "legendFormat":  "puntaje maximo del batch"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "max(nids_flujos_umbral)",
+                                           "legendFormat":  "umbral (percentil 99.5 del historico)"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  32,
+                       "type":  "table",
+                       "title":  "Flujos mas sospechosos (IP seudonimizadas)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  48,
+                                       "w":  16,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_flujo_sospechoso_puntaje",
+                                           "format":  "table",
+                                           "instant":  true
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "showHeader":  true,
+                                       "sortBy":  [
+                                                      {
+                                                          "displayName":  "Value",
+                                                          "desc":  true
+                                                      }
+                                                  ]
+                                   },
+                       "transformations":  [
+                                               {
+                                                   "id":  "organize",
+                                                   "options":  {
+                                                                   "excludeByName":  {
+                                                                                         "Time":  true,
+                                                                                         "instance":  true,
+                                                                                         "job":  true,
+                                                                                         "__name__":  true
+                                                                                     }
+                                                               }
+                                               }
+                                           ]
+                   },
+                   {
+                       "id":  33,
+                       "type":  "bargauge",
+                       "title":  "Silhouette por k (eleccion de k)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  48,
+                                       "w":  8,
+                                       "x":  16,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_anomalias_silhouette",
+                                           "legendFormat":  "k={{k}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  34,
+                       "type":  "row",
+                       "title":  "Evento empresarial - incidentes de seguridad (mesa de TI + abiertos por el modelo)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  56,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  35,
+                       "type":  "timeseries",
+                       "title":  "Incidentes abiertos por severidad",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  57,
+                                       "w":  8,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (severidad) (nids_incidentes_abiertos)",
+                                           "legendFormat":  "{{severidad}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "custom":  {
+                                                                           "fillOpacity":  40,
+                                                                           "stacking":  {
+                                                                                            "mode":  "normal"
+                                                                                        }
+                                                                       },
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  36,
+                       "type":  "timeseries",
+                       "title":  "Incidentes abiertos por origen",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  57,
+                                       "w":  6,
+                                       "x":  8,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (origen) (nids_incidentes_abiertos)",
+                                           "legendFormat":  "{{origen}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  37,
+                       "type":  "bargauge",
+                       "title":  "Abiertos en los ultimos 5 min (ventana deslizante)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  57,
+                                       "w":  5,
+                                       "x":  14,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (severidad) (nids_incidentes_ultimos_5min)",
+                                           "legendFormat":  "{{severidad}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  38,
+                       "type":  "stat",
+                       "title":  "MTTR (min, ultimos 50)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  57,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  3
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_incidentes_mttr_minutos",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "m"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  39,
+                       "type":  "stat",
+                       "title":  "Abiertos por el modelo (total)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  60,
+                                       "w":  5,
+                                       "x":  19,
+                                       "h":  4
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "max(nids_incidentes_automaticos_total)",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  40,
+                       "type":  "row",
+                       "title":  "Modelos de serie de tiempo (validacion cruzada temporal + test)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  64,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  41,
+                       "type":  "table",
+                       "title":  "Ganador por indicador",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  65,
+                                       "w":  8,
+                                       "x":  0,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_ganador_info",
+                                           "format":  "table",
+                                           "instant":  true
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "showHeader":  true,
+                                       "sortBy":  [
+                                                      {
+                                                          "displayName":  "indicador",
+                                                          "desc":  true
+                                                      }
+                                                  ]
+                                   },
+                       "transformations":  [
+                                               {
+                                                   "id":  "organize",
+                                                   "options":  {
+                                                                   "excludeByName":  {
+                                                                                         "Time":  true,
+                                                                                         "instance":  true,
+                                                                                         "job":  true,
+                                                                                         "Value":  true,
+                                                                                         "__name__":  true
+                                                                                     }
+                                                               }
+                                               }
+                                           ]
+                   },
+                   {
+                       "id":  42,
+                       "type":  "bargauge",
+                       "title":  "Mejora del RMSE vs persistencia (test)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  65,
+                                       "w":  8,
+                                       "x":  8,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_mejora_vs_persistencia_pct",
+                                           "legendFormat":  "{{indicador}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  43,
+                       "type":  "bargauge",
+                       "title":  "R2 en test por modelo",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  65,
+                                       "w":  8,
+                                       "x":  16,
+                                       "h":  6
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_modelo_r2",
+                                           "legendFormat":  "{{indicador}} / {{modelo}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         },
+                                       "orientation":  "horizontal"
+                                   }
+                   },
+                   {
+                       "id":  44,
+                       "type":  "row",
+                       "title":  "KPIs del flujo de red",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  71,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  45,
+                       "type":  "timeseries",
+                       "title":  "Composicion del trafico",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  72,
+                                       "w":  12,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "avg(nids_trafico_kpi{kpi=\"pct_trafico_cifrado\"})",
+                                           "legendFormat":  "% cifrado (443)"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "avg(nids_trafico_kpi{kpi=\"pct_trafico_externo\"})",
+                                           "legendFormat":  "% hacia/desde internet"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "avg(nids_trafico_kpi{kpi=\"pct_tcp\"})",
+                                           "legendFormat":  "% TCP"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  46,
+                       "type":  "timeseries",
+                       "title":  "Consultas DNS y hosts activos por minuto",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  72,
+                                       "w":  12,
+                                       "x":  12,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"consultas_dns_min\"})",
+                                           "legendFormat":  "DNS / min"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"hosts_activos\"})",
+                                           "legendFormat":  "Hosts activos"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  47,
+                       "type":  "row",
+                       "title":  "Observabilidad del pipeline (Kafka -\u003e Spark -\u003e Grafana)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  79,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  48,
+                       "type":  "timeseries",
+                       "title":  "Mensajes/s publicados por topico (Kafka)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  80,
+                                       "w":  8,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum by (topic) (rate(kafka_topic_partition_current_offset{topic!~\"__.*\"}[2m]))",
+                                           "legendFormat":  "{{topic}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  49,
+                       "type":  "timeseries",
+                       "title":  "Spark: filas/s procesadas vs entrada",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  80,
+                                       "w":  8,
+                                       "x":  8,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_spark_filas_procesadas_por_seg",
+                                           "legendFormat":  "procesadas {{consulta}}"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_spark_filas_entrada_por_seg",
+                                           "legendFormat":  "entrada {{consulta}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  50,
+                       "type":  "timeseries",
+                       "title":  "Lag Kafka -\u003e Spark (registros pendientes)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  80,
+                                       "w":  8,
+                                       "x":  16,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_spark_lag_kafka_registros",
+                                           "legendFormat":  "{{consulta}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  51,
+                       "type":  "timeseries",
+                       "title":  "Duracion de micro-batch (ms)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  87,
+                                       "w":  8,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_spark_duracion_batch_ms",
+                                           "legendFormat":  "{{consulta}}"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "ms"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  52,
+                       "type":  "timeseries",
+                       "title":  "Latencia extremo a extremo (fin de ventana -\u003e Grafana)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  87,
+                                       "w":  8,
+                                       "x":  8,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_trafico_latencia_ventana_segundos",
+                                           "legendFormat":  "ventana trafico"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_ingestor_retraso_segundos",
+                                           "legendFormat":  "ingestor PCAP"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  53,
+                       "type":  "stat",
+                       "title":  "Segundos desde el ultimo archivo del sensor",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  87,
+                                       "w":  8,
+                                       "x":  16,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "time() - nids_ingestor_ultimo_archivo_timestamp",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s",
+                                                            "thresholds":  {
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "value":  null,
+                                                                                                 "color":  "green"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  120,
+                                                                                                 "color":  "orange"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  300,
+                                                                                                 "color":  "red"
+                                                                                             }
+                                                                                         ],
+                                                                               "mode":  "absolute"
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "background",
+                                       "graphMode":  "none",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  54,
+                       "type":  "row",
+                       "title":  "Sensor IoT - Raspberry Pi 5 (telemetria por MQTT)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  94,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  55,
+                       "type":  "timeseries",
+                       "title":  "Temperatura y CPU del sensor",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  95,
+                                       "w":  8,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_temp_prom",
+                                           "legendFormat":  "temp prom (C)"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_temp_max",
+                                           "legendFormat":  "temp max (C)"
+                                       },
+                                       {
+                                           "refId":  "C",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_cpu_prom",
+                                           "legendFormat":  "CPU %"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  56,
+                       "type":  "timeseries",
+                       "title":  "Interfaz espejo vs pipeline (Mbps)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  95,
+                                       "w":  8,
+                                       "x":  8,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_mbps_interfaz",
+                                           "legendFormat":  "interfaz del sensor"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(nids_trafico_kpi{kpi=\"mbps\"})",
+                                           "legendFormat":  "procesado por Spark"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "none"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  57,
+                       "type":  "stat",
+                       "title":  "Disco del sensor libre",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  95,
+                                       "w":  4,
+                                       "x":  16,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_disco_libre_gb",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "decgbytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  58,
+                       "type":  "stat",
+                       "title":  "Paquetes descartados (min)",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  95,
+                                       "w":  4,
+                                       "x":  20,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "nids_pi_descartados",
+                                           "legendFormat":  ""
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ]
+                                                         }
+                                   }
+                   },
+                   {
+                       "id":  59,
+                       "type":  "row",
+                       "title":  "Uso de la VM (base de la estimacion de costos)",
+                       "collapsed":  false,
+                       "gridPos":  {
+                                       "y":  102,
+                                       "w":  24,
+                                       "x":  0,
+                                       "h":  1
+                                   },
+                       "panels":  [
+
+                                  ]
+                   },
+                   {
+                       "id":  60,
+                       "type":  "timeseries",
+                       "title":  "CPU y memoria de la VM",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  103,
+                                       "w":  12,
+                                       "x":  0,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[2m])))",
+                                           "legendFormat":  "CPU %"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+                                           "legendFormat":  "RAM %"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   },
+                   {
+                       "id":  61,
+                       "type":  "timeseries",
+                       "title":  "Red y disco de la VM",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "gridPos":  {
+                                       "y":  103,
+                                       "w":  12,
+                                       "x":  12,
+                                       "h":  7
+                                   },
+                       "targets":  [
+                                       {
+                                           "refId":  "A",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*\"}[2m]))",
+                                           "legendFormat":  "entrada"
+                                       },
+                                       {
+                                           "refId":  "B",
+                                           "datasource":  {
+                                                              "type":  "prometheus",
+                                                              "uid":  "prometheus"
+                                                          },
+                                           "expr":  "sum(rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*\"}[2m]))",
+                                           "legendFormat":  "salida"
+                                       }
+                                   ],
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "Bps"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "options":  {
+
+                                   }
+                   }
+               ]
+}

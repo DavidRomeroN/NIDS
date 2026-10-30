@@ -1,0 +1,76 @@
+site_name: NIDS campus — tráfico de red en tiempo real
+site_description: Sistema Big Data para detectar a tiempo comportamientos anómalos en el tráfico de red de un laboratorio de la UPeU.
+site_author: Nick Mayta, David Romero, Henyelrey Garcia, Jhan Ramos
+repo_url: https://github.com/DavidRomeroN/NIDS
+repo_name: DavidRomeroN/NIDS
+docs_dir: docs
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Modo oscuro
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
+
+nav:
+  - Inicio: index.md
+  - Brief del proyecto: brief.md
+  - Arquitectura: arquitectura.md
+  - Componentes:
+      - Sensor Raspberry Pi: sensor.md
+      - Ingesta y contratos (Kafka): ingesta.md
+      - Procesamiento streaming (Spark): streaming.md
+      - Capa batch (Data Lake): batch.md
+      - Modelos de ML: modelos.md
+      - Tablero Grafana: dashboard.md
+      - Observabilidad: observabilidad.md
+      - Costos y escalado: costos.md
+  - Integrantes:
+      - David Romero — volumen: integrantes/david.md
+      - Nick Mayta — conexiones: integrantes/nick.md
+      - Henyelrey Garcia — SYN: integrantes/henyelrey.md
+      - Jhan Ramos — DNS: integrantes/jhan.md
+  - Notebooks (PySpark):
+      - 00 ETL batch TRCU: notebooks/00_etl_batch_trcu.ipynb
+      - 01 David: notebooks/01_david_volumen_trafico.ipynb
+      - 02 Nick: notebooks/02_nick_conexiones.ipynb
+      - 03 Henyelrey: notebooks/03_henyelrey_intentos_syn.ipynb
+      - 04 Jhan: notebooks/04_jhan_consultas_dns.ipynb
+  - Operación:
+      - Despliegue reproducible: despliegue.md
+      - Seguridad y privacidad: seguridad.md
+  - Evaluación:
+      - Rúbrica y evidencias: rubrica.md
+      - Guion de sustentación: sustentacion.md

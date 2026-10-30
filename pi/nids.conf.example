@@ -1,0 +1,31 @@
+# /etc/nids/nids.conf — configuración del sensor. instalar.sh lo crea a partir
+# de este ejemplo; después se edita aquí y se reinicia con:
+#   sudo systemctl restart nids-captura nids-subida nids-tunel nids-telemetria
+
+SENSOR_ID=nids-pi-01
+
+# Interfaz conectada al puerto espejo (solo escucha, sin IP) y carpeta donde
+# se guardan los PCAP locales (disco USB montado en /mnt/nids).
+INTERFAZ_CAPTURA=eth0
+DIR_CAPTURA=/mnt/nids/pcap
+
+# Bytes que se guardan de cada paquete en el disco local (512 conserva
+# cabeceras + handshake TLS; 0 = paquete completo) y los que se suben a la nube.
+SNAPLEN_LOCAL=512
+SNAPLEN_NUBE=128
+SEGUNDOS_POR_ARCHIVO=30
+
+# Retención local: con el disco por encima de este % se borran los PCAP más
+# viejos (modo anillo). Con un disco grande y datos de tesis, subirlo a 97.
+LIMITE_USO_DISCO_PCT=90
+
+# VM de la nube (IP pública de Oracle). Puerto 443 si la red bloquea el 22.
+VM_HOST=0.0.0.0
+VM_PUERTO=22
+VM_USUARIO=nids-sensor
+CLAVE_SSH=/etc/nids/id_ed25519
+HABILITAR_SUBIDA=1
+
+# Tráfico que NO se captura: el propio canal del sensor hacia la nube
+# (evita que el Pi se mida a sí mismo subiendo archivos).
+FILTRO_BPF="not host ${VM_HOST}"

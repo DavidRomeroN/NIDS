@@ -1,0 +1,13 @@
+[Unit]
+Description=NIDS - captura pasiva con tcpdump al disco USB
+After=network-pre.target mnt-nids.mount
+Requires=mnt-nids.mount
+
+[Service]
+ExecStart=/opt/nids/bin/nids-captura.sh
+Restart=always
+RestartSec=5
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

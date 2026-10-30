@@ -1,0 +1,220 @@
+name: nids-nube
+
+# Stack completo del NIDS en la VM de la nube (Azure B2as_v2, 2 vCPU / 8 GB).
+# Todo en un solo compose porque todo vive en una sola máquina.
+#
+# Puertos publicados hacia internet: solo Grafana (3000). Kafka UI, Prometheus,
+# Pushgateway y MQTT quedan en 127.0.0.1 — se ven por túnel SSH, nunca abiertos.
+
+services:
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: nids-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      # Retención de 3 días: los eventos crudos ya quedan en el Data Lake
+      # (Parquet) y los PCAP completos en el disco del Pi. Sin volumen:
+      # Kafka es un buffer, no el almacén.
+      KAFKA_LOG_RETENTION_HOURS: 72
+
+  # Crea los tópicos antes de que arranque Spark: un tópico inexistente (p. ej.
+  # pi-telemetria antes del primer mensaje del Pi) hace fallar la consulta.
+  kafka-topicos:
+    image: apache/kafka:4.3.1
+    container_name: nids-kafka-topicos
+    restart: "no"
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        until /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do sleep 3; done
+        for t in trafico-flujos pi-telemetria incidentes-seguridad; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists \
+            --topic $$t --partitions 3 --replication-factor 1
+        done
+    depends_on:
+      - kafka
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.10.0
+    container_name: nids-kafka-exporter
+    restart: unless-stopped
+    command:
+      - --kafka.server=kafka:9092
+    depends_on:
+      - kafka
+
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.5.0
+    container_name: nids-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:48085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: nids
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+
+  # Broker MQTT del sensor (S7: el dispositivo publica por MQTT hacia un
+  # puente, nunca habla Kafka directo). Solo escucha en 127.0.0.1 de la VM;
+  # el Pi llega por su túnel SSH.
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    container_name: nids-mosquitto
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  bridge:
+    build: ./app
+    container_name: nids-bridge
+    restart: unless-stopped
+    command: python bridge_mqtt_kafka.py
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_TOPIC: nids/+/telemetria
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: pi-telemetria
+    depends_on:
+      - kafka
+      - mosquitto
+
+  ingestor:
+    build: ./app
+    container_name: nids-ingestor
+    restart: unless-stopped
+    command: python ingestor_pcap.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: trafico-flujos
+      DIR_ENTRADA: /srv/nids/incoming
+      DIR_PROCESADOS: /srv/nids/procesados
+      DIAS_RETENCION_PCAP: "3"
+      PUSHGATEWAY_URL: http://pushgateway:9091
+      SECRETO_SEUDONIMO: ${SECRETO_SEUDONIMO}
+    volumes:
+      - /srv/nids:/srv/nids
+    depends_on:
+      - kafka
+
+  incidentes:
+    build: ./app
+    container_name: nids-incidentes
+    restart: unless-stopped
+    command: python productor_incidentes.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: incidentes-seguridad
+      TZ: America/Lima
+    depends_on:
+      - kafka
+
+  spark-streaming:
+    build: ./spark
+    container_name: nids-spark-streaming
+    restart: unless-stopped
+    command: python /jobs/streaming_nids.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PUSHGATEWAY_URL: http://pushgateway:9091
+      DATA_DIR: /data
+      TZ: America/Lima
+    volumes:
+      - ./spark/jobs:/jobs:ro
+      - spark_data:/data
+      - ivy_cache:/root/.ivy2
+    depends_on:
+      kafka-topicos:
+        condition: service_completed_successfully
+      pushgateway:
+        condition: service_started
+
+  # Reentrena los modelos de series de tiempo cada 6 h sobre el histórico
+  # TRCU.csv + el Data Lake que va llenando spark-streaming (mismo patrón de
+  # S10: lead + división cronológica + baseline de persistencia + LR vs RF).
+  spark-entrenamiento:
+    build: ./spark
+    container_name: nids-spark-entrenamiento
+    restart: unless-stopped
+    command: python /jobs/entrenar_series.py --bucle
+    environment:
+      PUSHGATEWAY_URL: http://pushgateway:9091
+      DATA_DIR: /data
+      MINUTOS_ENTRE_ENTRENAMIENTOS: "360"
+      TZ: America/Lima
+    volumes:
+      - ./spark/jobs:/jobs:ro
+      - spark_data:/data
+      # Histórico TRCU.csv: fuera de git porque trae IP reales (preparar_historico.py)
+      - /srv/nids/historico:/data/historico:ro
+    depends_on:
+      - pushgateway
+
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    container_name: nids-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=60d
+    ports:
+      - "127.0.0.1:49090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  pushgateway:
+    image: prom/pushgateway:v1.11.1
+    container_name: nids-pushgateway
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:49091:9091"
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: nids-node-exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: nids-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/nids.json
+      TZ: America/Lima
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  spark_data:
+  ivy_cache:
+  prometheus_data:
+  grafana_data:

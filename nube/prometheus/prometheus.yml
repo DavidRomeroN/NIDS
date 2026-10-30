@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: kafka-exporter
+    static_configs:
+      - targets:
+          - kafka-exporter:9308
+
+  - job_name: pushgateway
+    honor_labels: true
+    static_configs:
+      - targets:
+          - pushgateway:9091
+
+  # CPU/RAM/disco/red de la VM: base de la estimación de costos y escalado.
+  - job_name: node
+    static_configs:
+      - targets:
+          - node-exporter:9100

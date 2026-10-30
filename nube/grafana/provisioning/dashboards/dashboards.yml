@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: nids
+    folder: NIDS
+    type: file
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
