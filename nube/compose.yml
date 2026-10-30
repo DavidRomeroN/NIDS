@@ -176,6 +176,8 @@ services:
       PUSHGATEWAY_URL: http://pushgateway:9091
       DATA_DIR: /data
       MINUTOS_ENTRE_ENTRENAMIENTOS: "360"
+      # Datos en vivo fuera del entrenamiento hasta tener varios días del punto nuevo.
+      SENSORES_EXCLUIDOS: "replay-trcu,nids-pi-01"
       TZ: America/Lima
     volumes:
       - ./spark/jobs:/jobs:ro

@@ -39,7 +39,9 @@ MINUTOS_ENTRE_ENTRENAMIENTOS = float(os.getenv("MINUTOS_ENTRE_ENTRENAMIENTOS", "
 
 FUENTES = ["historico_minuto", "trafico_minuto"]  # TRCU.csv (batch) + stream en vivo
 # El plan B de la demo reproduce TRCU.csv: ya está en historico_minuto, no es dato nuevo.
-SENSORES_EXCLUIDOS = ["replay-trcu"]
+# Un punto de captura nuevo también se excluye hasta juntar varios días: con pocas
+# horas de otra red el test se llena de deriva (SYN llegó a −169 % vs persistencia).
+SENSORES_EXCLUIDOS = os.getenv("SENSORES_EXCLUIDOS", "replay-trcu").split(",")
 COLUMNAS_MINUTO = ["ventana_inicio", "ventana_fin", "sensorId", "flujos", "paquetes", "bytes",
                    "hosts", "tcp", "udp", "dns", "bytes_tls", "syn", "bytes_externos"]
 
