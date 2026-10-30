@@ -260,14 +260,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../brief/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Inicio
+    Brief del proyecto
   
 
     
@@ -287,14 +287,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../brief/" class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Brief del proyecto
+    Inicio
   
 
     
@@ -788,10 +788,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#el-evento-empresarial-incidentes-seguridad" class="md-nav__link">
+  <a href="#arquitectura-y-observabilidad-mi-rol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        El evento empresarial: incidentes-seguridad
+        Arquitectura y observabilidad (mi rol)
       
     </span>
   </a>
@@ -1381,10 +1381,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#el-evento-empresarial-incidentes-seguridad" class="md-nav__link">
+  <a href="#arquitectura-y-observabilidad-mi-rol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        El evento empresarial: incidentes-seguridad
+        Arquitectura y observabilidad (mi rol)
       
     </span>
   </a>
@@ -1445,7 +1445,7 @@
 
 
 <h1 id="nick-saim-mayta-jara-conexiones-flujos">Nick Saim Mayta Jara — Conexiones (flujos)<a class="headerlink" href="#nick-saim-mayta-jara-conexiones-flujos" title="Permanent link">&para;</a></h1>
-<p><strong>Énfasis en el equipo:</strong> ingesta en Kafka y evento empresarial (incidentes).</p>
+<p><strong>Rol en el equipo:</strong> arquitectura Lambda y observabilidad general; coordinación técnica.</p>
 <h2 id="mis-dos-dimensiones">Mis dos dimensiones<a class="headerlink" href="#mis-dos-dimensiones" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1521,43 +1521,74 @@
 </tbody>
 </table>
 <p><strong>+45,8 % de RMSE frente a la persistencia</strong>: el indicador más predecible del proyecto.</p>
-<h2 id="el-evento-empresarial-incidentes-seguridad">El evento empresarial: <code>incidentes-seguridad</code><a class="headerlink" href="#el-evento-empresarial-incidentes-seguridad" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Contrato v1.1</strong> (ver <a href="../../ingesta/">Ingesta</a>): <code>incidenteId</code> como key, para
-  que apertura y cierre del mismo ticket caigan en la misma partición y en orden.</li>
-<li><strong>Dos productores:</strong> la mesa de TI (<code>productor_incidentes.py</code>, con el ritmo
-  de un horario de clases) y <strong>el propio modelo</strong> (Spark, <code>reportadoPor:
-  nids-modelo</code>).</li>
-<li><strong>Procesamiento:</strong> tickets abiertos por severidad y origen, MTTR de los
-  últimos 50, y ventana <strong>deslizante</strong> de 5 min cada 1 min.</li>
-</ul>
+<h2 id="arquitectura-y-observabilidad-mi-rol">Arquitectura y observabilidad (mi rol)<a class="headerlink" href="#arquitectura-y-observabilidad-mi-rol" title="Permanent link">&para;</a></h2>
+<p>La arquitectura es Lambda: una sola función, <code>agregar_por_minuto()</code>, que usan
+la capa batch y la de velocidad (<a href="../../arquitectura/">Arquitectura</a>). Para
+saber si el pipeline está sano, estas son las señales del tablero:</p>
+<table>
+<thead>
+<tr>
+<th>Señal</th>
+<th>Panel</th>
+<th>Qué indica</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lag Kafka → Spark</td>
+<td>"Lag Kafka -&gt; Spark"</td>
+<td>Primera alarma de backpressure: Kafka ya tiene datos que Spark no procesó</td>
+</tr>
+<tr>
+<td>Duración del micro-batch</td>
+<td>"Duración de micro-batch"</td>
+<td>Si supera el trigger (20 s), el pipeline no da abasto</td>
+</tr>
+<tr>
+<td>Latencia extremo a extremo</td>
+<td>"Latencia extremo a extremo"</td>
+<td>Desde que termina la ventana hasta que llega a Grafana</td>
+</tr>
+<tr>
+<td>Último archivo del sensor</td>
+<td>"Segundos desde el último archivo"</td>
+<td>Verde &lt; 2 min, rojo &gt; 5 min: el Pi se cayó o perdió la red</td>
+</tr>
+<tr>
+<td>Interfaz espejo vs pipeline</td>
+<td>"Interfaz espejo vs pipeline"</td>
+<td>Si divergen, se pierden datos entre el Pi y Spark</td>
+</tr>
+<tr>
+<td>CPU / RAM de la VM</td>
+<td>"Uso de la VM"</td>
+<td>Base de la estimación de costos y del escalado</td>
+</tr>
+</tbody>
+</table>
 <h2 id="que-muestro-en-mi-demo-3-min">Qué muestro en mi demo (3 min)<a class="headerlink" href="#que-muestro-en-mi-demo-3-min" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Publico un incidente en vivo y lo sigo por todo el pipeline:
-   <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>incidentes<span class="w"> </span>python<span class="w"> </span>productor_incidentes.py<span class="w"> </span>--uno<span class="w"> </span>--severidad<span class="w"> </span>critica<span class="w"> </span>--categoria<span class="w"> </span>escaneo_red
-docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>--tail<span class="w"> </span><span class="m">3</span><span class="w"> </span>spark-streaming<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>incidentes
-</code></pre></div>
-   Se ve el offset/partición en el log del productor, el <code>batch_procesado</code> en
-   Spark y el panel "Incidentes abiertos" sube a los pocos segundos.</li>
-<li>Kafka UI (túnel SSH): los 3 tópicos, sus particiones y mensajes.</li>
 <li>Grafana "Dimensión 2": flujos reales vs predicción vs persistencia.</li>
+<li>Fila de observabilidad: lag en 0, duración de batch y latencia; explico qué
+   alarma sonaría primero ante backpressure.</li>
+<li><a href="../../costos/">Costos</a>: cuánto cuesta hoy y cuánto costaría escalar a todo el campus.</li>
 <li>Notebook 02: servicios más usados y duración de las conexiones.</li>
 </ol>
 <h2 id="mi-decision-propia">Mi decisión propia<a class="headerlink" href="#mi-decision-propia" title="Permanent link">&para;</a></h2>
-<p>Que el <strong>modelo genere el evento de negocio</strong>: un incidente automático con
-evidencia legible y un limitador de 10 minutos por motivo, para que una ráfaga
-de anomalías sea un ticket y no cincuenta.</p>
+<p>Medir la <strong>salud del sensor</strong> como parte de la observabilidad: si el Pi deja de
+enviar, el pipeline "se ve sano" (lag 0) pero está ciego. El panel "Segundos
+desde el último archivo" detecta eso.</p>
 <h2 id="preguntas-que-me-pueden-hacer">Preguntas que me pueden hacer<a class="headerlink" href="#preguntas-que-me-pueden-hacer" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>¿Diferencia entre el contrato empresarial y el del sensor?</strong> El incidente es
-  poco frecuente, de alto valor y cambia de estado (abierto → cerrado): key =
-  <code>incidenteId</code>. La telemetría es frecuente (5 s) y de bajo valor individual:
-  key = <code>sensorId</code>, para mantener el orden por dispositivo.</li>
-<li><strong>¿Qué es un consumer group y un offset en tu pipeline?</strong> Spark lleva sus
-  propios offsets en el checkpoint de cada consulta; por eso al reiniciar sigue
-  donde quedó sin perder ni repetir lo confirmado.</li>
-<li><strong>¿Por qué 3 particiones?</strong> Permite paralelizar la lectura y mantiene el
-  orden por key; para el volumen de un laboratorio sobra.</li>
+<li><strong>¿Qué métrica te avisa primero de backpressure?</strong> El lag de Kafka hacia Spark:
+  mide directamente lo pendiente. La duración del batch avisa después.</li>
+<li><strong>¿Por qué Pushgateway?</strong> Spark Streaming en Python no expone un endpoint que
+  Prometheus pueda leer; Pushgateway es un atajo pragmático. Lo recomendado
+  sería el PrometheusServlet de Spark o un exporter propio.</li>
+<li><strong>¿Costo streaming vs batch?</strong> El batch paga por corrida y puede ir de noche;
+  el streaming paga 24/7 y se dimensiona por el pico, no por el promedio.</li>
+<li><strong>¿Por qué Lambda y no Kappa?</strong> Reentrenar sobre meses de historia es batch
+  pesado (cada 6 h), mientras la inferencia tiene que tardar segundos.</li>
 </ul>
 
 

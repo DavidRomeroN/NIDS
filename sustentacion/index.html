@@ -258,14 +258,14 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../brief/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Inicio
+    Brief del proyecto
   
 
     
@@ -285,14 +285,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../brief/" class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Brief del proyecto
+    Inicio
   
 
     
@@ -1492,16 +1492,16 @@ conviertan en incidentes?</p>
 <h2 id="2-secuencia-de-la-demo">2. Secuencia de la demo<a class="headerlink" href="#2-secuencia-de-la-demo" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Evolución:</strong> del histórico TRCU.csv (batch, U1) al sensor en vivo (U2).</li>
-<li><strong>Evento empresarial en vivo</strong> (Nick):
+<li><strong>Evento empresarial en vivo</strong> (Jhan, streaming y Kafka):
    <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>incidentes<span class="w"> </span>python<span class="w"> </span>productor_incidentes.py<span class="w"> </span>--uno<span class="w"> </span>--severidad<span class="w"> </span>critica<span class="w"> </span>--categoria<span class="w"> </span>escaneo_red
 </code></pre></div></li>
-<li><strong>Evento IoT en vivo:</strong> <code>docker compose logs -f bridge</code> (telemetría del Pi cada 5 s).</li>
-<li><strong>Ventana + watermark + checkpoint en logs:</strong>
+<li><strong>Evento IoT en vivo</strong> (David, sensor): <code>docker compose logs -f bridge</code> (telemetría del Pi cada 5 s).</li>
+<li><strong>Ventana + watermark + checkpoint en logs</strong> (Jhan):
    <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>spark-streaming<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>observabilidad<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-5
 </code></pre></div></li>
-<li><strong>Observabilidad y costos</strong> (Jhan): filas de observabilidad y <a href="../costos/">costos</a>.</li>
-<li><strong>Modelos validados</strong> (Henyelrey): fila "Modelos" del tablero y <a href="../modelos/">Modelos</a>.</li>
-<li><strong>BI con predicción junto a KPIs</strong> (David): Resumen + Dimensión 1.</li>
+<li><strong>Arquitectura, observabilidad y costos</strong> (Nick): filas de observabilidad y <a href="../costos/">costos</a>.</li>
+<li><strong>Capa batch</strong> (Henyelrey): notebook 00, calidad del histórico, Parquet particionado y <em>partition pruning</em>.</li>
+<li><strong>Modelos validados y BI con predicción junto a KPIs</strong> (David): fila "Modelos", Resumen y Dimensión 1.</li>
 <li><strong>Decisión propia del equipo:</strong> el modelo abre incidentes solo, con
    evidencia legible y limitador de 10 min; y la escala log + validación
    cruzada temporal que corrigió un modelo que en test era 66 % peor que la persistencia.</li>
