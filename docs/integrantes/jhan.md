@@ -12,6 +12,10 @@
 | Predicción | DNS de la próxima hora | DNS del minuto siguiente (RandomForest log) |
 | Dónde se ve | [Notebook 04](../notebooks/04_jhan_consultas_dns.ipynb) | Grafana, fila "Dimensión 4 (Jhan Ramos)" |
 
+> **Nota:** "tamaño de pregunta" es `bytes_fwd` por flujo; un flujo puede
+> contener varias consultas. Los flujos DNS sin respuesta (`bytes_bwd = 0`)
+> pueden ser un artefacto de la captura y no necesariamente un fallo del servidor.
+
 ## Resultado del modelo en vivo (test)
 
 | Modelo | RMSE | MAE | R² |
@@ -25,6 +29,15 @@
 GBT quedó apenas mejor. No se cambia el ganador mirando el test: eso sería
 contaminar la evaluación.
 
+## Cómo se detecta una ráfaga DNS
+
+El modelo predice los flujos DNS del minuto siguiente. Si el valor real supera
+la predicción en más de **3 × RMSE** del test, se abre un incidente automático
+(`severidad: media`, `categoria: anomalia_trafico`) con la evidencia escrita
+(valor real, predicción, umbral y minuto). Como las ventanas usan un watermark
+de 4 min, el incidente aparece **unos 4–5 min después** de la ráfaga. El ticket
+dice cuándo y cuánto se desvió el tráfico; la causa la investiga TI.
+
 ## El evento empresarial: `incidentes-seguridad` (mi rol)
 
 - **Contrato v1.1** (ver [Ingesta](../ingesta.md)): `incidenteId` como key, para
@@ -37,6 +50,9 @@ contaminar la evaluación.
 
 ## Qué muestro en mi demo (3 min)
 
+> Para mostrar la detección de DNS, lanzo la ráfaga de `nslookup` al menos
+> 6–8 min antes de exponer.
+
 1. Publico un incidente en vivo y lo sigo por todo el pipeline:
    ```bash
    docker compose exec incidentes python productor_incidentes.py --uno --severidad critica --categoria escaneo_red
@@ -45,7 +61,7 @@ contaminar la evaluación.
    Se ve el offset/partición en el log del productor, el `batch_procesado` en
    Spark y el panel "Incidentes abiertos" sube a los pocos segundos.
 2. Kafka UI (túnel SSH): los 3 tópicos, sus particiones y mensajes.
-3. Grafana "Dimensión 4": DNS real vs predicción vs persistencia.
+3. Grafana "Dimensión 4": DNS real vs predicción vs persistencia, y el panel de incidentes abiertos por el modelo.
 4. Notebook 04: hosts que más consultan DNS y el p99 del tamaño de pregunta.
 
 ## Mi decisión propia
