@@ -177,7 +177,7 @@ services:
       DATA_DIR: /data
       MINUTOS_ENTRE_ENTRENAMIENTOS: "360"
       # Datos en vivo fuera del entrenamiento hasta tener varios días del punto nuevo.
-      SENSORES_EXCLUIDOS: "replay-trcu,nids-pi-01"
+      SENSORES_EXCLUIDOS: "replay-trcu,nids-pi-01,prueba-vm"
       TZ: America/Lima
     volumes:
       - ./spark/jobs:/jobs:ro
