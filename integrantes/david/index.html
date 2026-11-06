@@ -749,10 +749,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test-ultimo-20-del-tiempo" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-del-historico-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test, último 20 % del tiempo)
+        Resultado del modelo en vivo (test del histórico, 6-nov-2026)
       
     </span>
   </a>
@@ -1359,10 +1359,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test-ultimo-20-del-tiempo" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-del-historico-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test, último 20 % del tiempo)
+        Resultado del modelo en vivo (test del histórico, 6-nov-2026)
       
     </span>
   </a>
@@ -1461,7 +1461,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="resultado-del-modelo-en-vivo-test-ultimo-20-del-tiempo">Resultado del modelo en vivo (test, último 20 % del tiempo)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test-ultimo-20-del-tiempo" title="Permanent link">&para;</a></h2>
+<h2 id="resultado-del-modelo-en-vivo-test-del-historico-6-nov-2026">Resultado del modelo en vivo (test del histórico, 6-nov-2026)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test-del-historico-6-nov-2026" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1474,38 +1474,42 @@
 <tbody>
 <tr>
 <td>Persistencia</td>
-<td style="text-align: right;">148 264</td>
-<td style="text-align: right;">24 340</td>
-<td style="text-align: right;">−0,33</td>
+<td style="text-align: right;">146 021</td>
+<td style="text-align: right;">23 982</td>
+<td style="text-align: right;">−1,04</td>
 </tr>
 <tr>
 <td>LinearRegression (log)</td>
-<td style="text-align: right;">126 100</td>
-<td style="text-align: right;">14 319</td>
-<td style="text-align: right;">0,03</td>
+<td style="text-align: right;">101 750</td>
+<td style="text-align: right;">12 870</td>
+<td style="text-align: right;">0,01</td>
 </tr>
 <tr>
 <td>RandomForest (log)</td>
-<td style="text-align: right;">126 945</td>
-<td style="text-align: right;">13 735</td>
+<td style="text-align: right;">101 422</td>
+<td style="text-align: right;">12 225</td>
 <td style="text-align: right;">0,02</td>
 </tr>
 <tr>
 <td><strong>GBT (log, profundidad 3) — ganador</strong></td>
-<td style="text-align: right;"><strong>124 294</strong></td>
-<td style="text-align: right;"><strong>13 997</strong></td>
-<td style="text-align: right;"><strong>0,06</strong></td>
+<td style="text-align: right;"><strong>99 893</strong></td>
+<td style="text-align: right;"><strong>12 560</strong></td>
+<td style="text-align: right;"><strong>0,05</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>+16,2 % de RMSE y −43 % de MAE frente a la persistencia.</strong></p>
+<p><strong>+31,6 % de RMSE y −48 % de MAE frente a la persistencia.</strong> En la corrida del PPT
+fue +16,2 %: quitar 2 filas de prueba movió mucho el RMSE, porque es muy sensible
+a los picos. En los últimos dos días del Pi, el mismo modelo mejora +21,2 %. El
+candidato reentrenado el 6-nov no superó la compuerta, así que este sigue en producción.</p>
 <h2 id="que-muestro-en-mi-demo-3-min">Qué muestro en mi demo (3 min)<a class="headerlink" href="#que-muestro-en-mi-demo-3-min" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Grafana → "Dimensión 1":</strong> el bytes/min real, la predicción del modelo,
    la persistencia y el umbral de anomalía, actualizándose.</li>
-<li>Abro un video o una descarga en el laboratorio y muestro cómo sube la curva
-   real: si supera predicción + 3·RMSE, aparece la anomalía y un incidente
-   automático en "Incidentes abiertos por origen → nids-modelo".</li>
+<li>Explico cuándo se abre un incidente: si el valor real supera predicción +
+   3·RMSE, aparece la anomalía y un incidente en "Incidentes abiertos por origen →
+   nids-modelo". Con el Pi en un puerto normal, la descarga de otra PC no se ve:
+   para provocarlo hay que generar el tráfico desde el propio Pi.</li>
 <li><strong>Notebook 01:</strong> perfil por hora del día (clase vs fin de semana) y MB por
    servicio, que explican por qué el modelo usa hora y rezagos.</li>
 <li><strong>Contraste U1 vs U2:</strong> en U1 predigo la próxima hora desde el histórico (foto
@@ -1514,12 +1518,12 @@
 <h2 id="mi-decision-propia">Mi decisión propia<a class="headerlink" href="#mi-decision-propia" title="Permanent link">&para;</a></h2>
 <p>Usar <strong>escala logarítmica como hiperparámetro</strong>. El primer GBT en escala
 original quedó 66 % peor que la persistencia en test: perseguía los picos de
-MB. Con validación cruzada temporal y la opción log, el ganador quedó 16 % mejor.</p>
+MB. Con validación cruzada temporal y la opción log, el ganador le ganó a la persistencia.</p>
 <h2 id="preguntas-que-me-pueden-hacer">Preguntas que me pueden hacer<a class="headerlink" href="#preguntas-que-me-pueden-hacer" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>¿Por qué el R² es tan bajo si le ganas a la persistencia?</strong> Porque los picos
   de descarga son casi impredecibles un minuto antes; el R² castiga mucho esos
-  picos. El MAE (error típico) baja 43 %: el modelo acierta mucho mejor el
+  picos. El MAE (error típico) baja 48 %: el modelo acierta mucho mejor el
   comportamiento normal, que es lo que define el umbral de anomalía.</li>
 <li><strong>¿Por qué el Pi no procesa nada?</strong> Porque captura es lo único sensible al
   tiempo real: si el análisis se cuelga, la captura sigue. Y 4 núcleos ARM no

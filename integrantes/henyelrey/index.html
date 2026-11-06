@@ -805,10 +805,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1359,10 +1359,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1452,7 +1452,7 @@
 <tr>
 <td>Predicción</td>
 <td>SYN de la próxima hora</td>
-<td>SYN del minuto siguiente (GBT log)</td>
+<td>SYN del minuto siguiente (regresión lineal)</td>
 </tr>
 <tr>
 <td>Dónde se ve</td>
@@ -1461,7 +1461,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="resultado-del-modelo-en-vivo-test">Resultado del modelo en vivo (test)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test" title="Permanent link">&para;</a></h2>
+<h2 id="resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026">Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1474,33 +1474,33 @@
 <tbody>
 <tr>
 <td>Persistencia</td>
-<td style="text-align: right;">1,139</td>
-<td style="text-align: right;">0,254</td>
-<td style="text-align: right;">0,79</td>
+<td style="text-align: right;">2,81</td>
+<td style="text-align: right;">1,18</td>
+<td style="text-align: right;">−0,16</td>
 </tr>
 <tr>
-<td>LinearRegression (log)</td>
-<td style="text-align: right;">2,313</td>
-<td style="text-align: right;">0,250</td>
-<td style="text-align: right;">0,14</td>
+<td><strong>LinearRegression, histórico + Pi — ganador</strong></td>
+<td style="text-align: right;"><strong>2,14</strong></td>
+<td style="text-align: right;"><strong>0,98</strong></td>
+<td style="text-align: right;"><strong>0,33</strong></td>
 </tr>
 <tr>
-<td>RandomForest (log)</td>
-<td style="text-align: right;">1,976</td>
-<td style="text-align: right;">0,239</td>
-<td style="text-align: right;">0,37</td>
+<td>RandomForest</td>
+<td style="text-align: right;">2,24</td>
+<td style="text-align: right;">0,98</td>
+<td style="text-align: right;">0,27</td>
 </tr>
 <tr>
-<td><strong>GBT (log, profundidad 5) — ganador</strong></td>
-<td style="text-align: right;"><strong>1,006</strong></td>
-<td style="text-align: right;"><strong>0,218</strong></td>
-<td style="text-align: right;"><strong>0,84</strong></td>
+<td>GBT</td>
+<td style="text-align: right;">2,28</td>
+<td style="text-align: right;">0,93</td>
+<td style="text-align: right;">0,24</td>
 </tr>
 </tbody>
 </table>
-<p><strong>+11,6 % de RMSE frente a la persistencia.</strong> Acá la persistencia ya era fuerte
-(R² 0,79): LR y RF quedan peor que ella, y solo el GBT la supera. Es el caso
-donde más se nota por qué hay que comparar contra el baseline.</p>
+<p><strong>+24,1 % de RMSE frente a la persistencia.</strong> El +11,6 % del PPT se midió solo con el
+histórico, así que las dos cifras no se comparan. El conteo de SYN también incluye
+respuestas de servidores: un pico es una señal para revisar, no un escaneo confirmado.</p>
 <h2 id="que-muestro-en-mi-demo-3-min">Qué muestro en mi demo (3 min)<a class="headerlink" href="#que-muestro-en-mi-demo-3-min" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Grafana "Dimensión 3": SYN reales vs predicción y el umbral.</li>
@@ -1529,8 +1529,8 @@ GBT que en test quedaba 66 % peor que la persistencia.</p>
   métricas serían optimistas e irreales.</li>
 <li><strong>¿Para qué particionar por fecha?</strong> Para que una consulta de un día lea
   solo esa carpeta y no los 43 días: el plan físico lo muestra en <code>PartitionFilters</code>.</li>
-<li><strong>¿Qué pasa si el modelo deja de servir?</strong> Se reentrena cada 6 h con lo nuevo,
-  y el panel "Error absoluto en vivo" muestra si el modelo empieza a
+<li><strong>¿Qué pasa si el modelo deja de servir?</strong> Se reentrena cada 6 h y solo se
+  reemplaza si gana en el mismo test; el panel "Error absoluto en vivo" muestra si el modelo empieza a
   equivocarse más que la persistencia en producción.</li>
 </ul>
 

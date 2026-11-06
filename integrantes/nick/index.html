@@ -777,10 +777,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1370,10 +1370,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1474,7 +1474,7 @@
 <tr>
 <td>Predicción</td>
 <td>flujos de la próxima hora</td>
-<td>flujos del minuto siguiente (RandomForest)</td>
+<td>flujos del minuto siguiente (regresión lineal)</td>
 </tr>
 <tr>
 <td>Dónde se ve</td>
@@ -1483,7 +1483,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="resultado-del-modelo-en-vivo-test">Resultado del modelo en vivo (test)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test" title="Permanent link">&para;</a></h2>
+<h2 id="resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026">Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1496,31 +1496,32 @@
 <tbody>
 <tr>
 <td>Persistencia</td>
-<td style="text-align: right;">10,32</td>
-<td style="text-align: right;">6,76</td>
-<td style="text-align: right;">−0,24</td>
+<td style="text-align: right;">14,15</td>
+<td style="text-align: right;">8,80</td>
+<td style="text-align: right;">0,53</td>
 </tr>
 <tr>
-<td>LinearRegression</td>
-<td style="text-align: right;">6,67</td>
-<td style="text-align: right;">3,61</td>
-<td style="text-align: right;">0,48</td>
+<td><strong>LinearRegression, solo Pi — ganador</strong></td>
+<td style="text-align: right;"><strong>12,07</strong></td>
+<td style="text-align: right;"><strong>7,58</strong></td>
+<td style="text-align: right;"><strong>0,66</strong></td>
 </tr>
 <tr>
-<td><strong>RandomForest (profundidad 10) — ganador</strong></td>
-<td style="text-align: right;"><strong>5,60</strong></td>
-<td style="text-align: right;"><strong>2,93</strong></td>
-<td style="text-align: right;"><strong>0,63</strong></td>
+<td>RandomForest</td>
+<td style="text-align: right;">12,30</td>
+<td style="text-align: right;">7,78</td>
+<td style="text-align: right;">0,64</td>
 </tr>
 <tr>
 <td>GBT</td>
-<td style="text-align: right;">6,29</td>
-<td style="text-align: right;">3,39</td>
-<td style="text-align: right;">0,54</td>
+<td style="text-align: right;">12,67</td>
+<td style="text-align: right;">7,79</td>
+<td style="text-align: right;">0,62</td>
 </tr>
 </tbody>
 </table>
-<p><strong>+45,8 % de RMSE frente a la persistencia</strong>: el indicador más predecible del proyecto.</p>
+<p><strong>+14,7 % de RMSE frente a la persistencia.</strong> El +45,8 % del PPT se midió solo con el
+histórico; con datos del Pi, ese modelo quedaba 30,5 % peor que la persistencia.</p>
 <h2 id="arquitectura-y-observabilidad-mi-rol">Arquitectura y observabilidad (mi rol)<a class="headerlink" href="#arquitectura-y-observabilidad-mi-rol" title="Permanent link">&para;</a></h2>
 <p>La arquitectura es Lambda: una sola función, <code>agregar_por_minuto()</code>, que usan
 la capa batch y la de velocidad (<a href="../../arquitectura/">Arquitectura</a>). Para

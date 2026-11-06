@@ -601,10 +601,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-resultados-en-test-datos-reales-30-oct-2026" class="md-nav__link">
+  <a href="#13-resultados-en-produccion-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Resultados en test (datos reales, 30-oct-2026)
+        1.3 Resultados en producción (6-nov-2026)
       
     </span>
   </a>
@@ -1449,10 +1449,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-resultados-en-test-datos-reales-30-oct-2026" class="md-nav__link">
+  <a href="#13-resultados-en-produccion-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Resultados en test (datos reales, 30-oct-2026)
+        1.3 Resultados en producción (6-nov-2026)
       
     </span>
   </a>
@@ -1557,9 +1557,9 @@
 
 
 <h1 id="modelos-de-machine-learning">Modelos de Machine Learning<a class="headerlink" href="#modelos-de-machine-learning" title="Permanent link">&para;</a></h1>
-<p>El proyecto tiene <strong>dos familias de modelos</strong>, ambas entrenadas con Spark MLlib
-sobre el histórico real <code>TRCU.csv</code> y aplicadas en vivo dentro de Spark
-Structured Streaming:</p>
+<p>El proyecto tiene <strong>dos familias de modelos</strong>, entrenadas con Spark MLlib y
+aplicadas en vivo dentro de Spark Structured Streaming. El K-Means usa el
+histórico <code>TRCU.csv</code>; las series de tiempo usan ese histórico y los datos del Pi:</p>
 <table>
 <thead>
 <tr>
@@ -1594,11 +1594,12 @@ clasificador exigiría inventar etiquetas. Las series de tiempo usan como
 <h2 id="1-series-de-tiempo-una-por-integrante">1. Series de tiempo: una por integrante<a class="headerlink" href="#1-series-de-tiempo-una-por-integrante" title="Permanent link">&para;</a></h2>
 <h3 id="11-dataset-supervisado">1.1 Dataset supervisado<a class="headerlink" href="#11-dataset-supervisado" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Fuente:</strong> <code>historico_minuto</code> (TRCU.csv) más <code>trafico_minuto</code> (lo que ya llegó en vivo).</li>
+<li><strong>Fuente:</strong> <code>historico_minuto</code> (TRCU.csv) más <code>trafico_minuto</code> (lo que ya llegó en vivo).
+  Del Pi se usan solo los datos desde que está en su punto actual (30-oct-2026, 10:40).</li>
 <li><strong>Objetivo:</strong> <code>lead(indicador, 1)</code>, el valor del minuto siguiente.</li>
 <li><strong>Solo pares de minutos consecutivos:</strong> si el sensor estuvo apagado, el
   "minuto siguiente" no existe y la fila se descarta.</li>
-<li><strong>26 316 filas</strong> útiles.</li>
+<li><strong>Filas útiles (6-nov-2026):</strong> 26 314 del histórico y 10 087 del Pi.</li>
 </ul>
 <p><strong>Variables (32):</strong>
 - <strong>Estado del minuto (12):</strong> paquetes, bytes, flujos, hosts, tcp, udp, dns,
@@ -1618,43 +1619,51 @@ se reconstruyen desde el Data Lake (<code>precargar_historial()</code>) antes de
 el primer lote.</p>
 <h3 id="12-protocolo-de-validacion">1.2 Protocolo de validación<a class="headerlink" href="#12-protocolo-de-validacion" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>flowchart LR
-    A["0 %"] --- B["50 %"] --- C["60 %"] --- D["70 %"] --- E["80 %"] --- F["100 %"]
-    subgraph CV["Validación cruzada temporal (rolling origin)"]
+    subgraph CV["Validación cruzada temporal sobre el 80 % inicial del Pi"]
       direction LR
-      c1["corte 1: entrena 0-50 %, valida 50-60 %"]
-      c2["corte 2: entrena 0-60 %, valida 60-70 %"]
-      c3["corte 3: entrena 0-70 %, valida 70-80 %"]
+      c1["corte 1: entrena hasta 55 %, valida 55-70 %"]
+      c2["corte 2: entrena hasta 70 %, valida 70-85 %"]
+      c3["corte 3: entrena hasta 85 %, valida 85-100 %"]
     end
-    T["TEST: 80-100 %&lt;br/&gt;no se toca hasta el final"]</code></pre>
+    CV --&gt; T["TEST: último 20 % del Pi&lt;br/&gt;no se toca hasta el final"]</code></pre>
 <ol>
-<li><strong>Test = el último 20 % del tiempo</strong> (5264 minutos). No participa en ninguna decisión.</li>
-<li><strong>Selección de hiperparámetros con validación cruzada temporal</strong>, en 3
-   cortes que siempre entrenan con el pasado y validan con el futuro inmediato. Nunca se usa <code>randomSplit</code>.</li>
-<li><strong>Grilla de búsqueda</strong>, de 12 configuraciones por indicador (36 entrenamientos):</li>
+<li><strong>Test = el último 20 % del tiempo del Pi</strong> (2018 minutos en la corrida del 6-nov). No participa en la selección.</li>
+<li><strong>Selección con validación cruzada temporal</strong>, en 3 cortes que siempre
+   entrenan con el pasado y validan con el futuro inmediato del Pi. Nunca se usa <code>randomSplit</code>.</li>
+<li><strong>Grilla de búsqueda</strong>, de 12 configuraciones por cada una de las dos
+   estrategias, solo el Pi o histórico + Pi (72 entrenamientos por indicador):</li>
 <li>LinearRegression: <code>regParam</code> ∈ {0, 0,1}</li>
 <li>RandomForest: <code>maxDepth</code> ∈ {6, 10}, con 40 árboles</li>
 <li>GBT: <code>maxDepth</code> ∈ {3, 5}, con 50 iteraciones</li>
 <li>y para cada uno, la <strong>escala</strong>: original o <code>log1p</code>/<code>expm1</code>.</li>
 <li><strong>Ganador:</strong> el de menor RMSE promedio en validación. Se reentrena con todo
-   lo anterior al test y se evalúa una sola vez en el test.</li>
+   lo anterior al test y se evalúa en el test.</li>
 <li><strong>Baseline obligatorio: persistencia</strong> (el minuto siguiente es igual al actual).</li>
+<li><strong>Compuerta de publicación:</strong> el modelo en producción solo cambia si, en el
+   mismo test, el candidato le gana a la persistencia, mejora el RMSE actual al
+   menos 1 % y no empeora el MAE más de 10 %. Se publica el mismo modelo medido.</li>
 </ol>
 <p><strong>Por qué la escala logarítmica.</strong> El tráfico tiene cola pesada: la mayoría de
 los minutos son tranquilos y unos pocos tienen picos de MB. En escala original,
 los árboles persiguen los picos y fallan en el resto. Aprender en <code>log1p</code> y
 volver con <code>expm1</code> lo estabiliza. Se deja como hiperparámetro y que decida la validación.</p>
-<h3 id="13-resultados-en-test-datos-reales-30-oct-2026">1.3 Resultados en test (datos reales, 30-oct-2026)<a class="headerlink" href="#13-resultados-en-test-datos-reales-30-oct-2026" title="Permanent link">&para;</a></h3>
+<h3 id="13-resultados-en-produccion-6-nov-2026">1.3 Resultados en producción (6-nov-2026)<a class="headerlink" href="#13-resultados-en-produccion-6-nov-2026" title="Permanent link">&para;</a></h3>
+<p>Flujos, SYN y DNS se midieron en los últimos 2018 minutos del Pi. Bytes conserva
+el modelo entrenado con el histórico porque el candidato que eligió la
+validación no superó la compuerta; sus cifras siguen siendo las del test del
+histórico. <strong>Por eso su porcentaje no se compara con los de las otras filas.</strong></p>
 <p><strong>Tabla 1. RMSE en test y mejora sobre la persistencia</strong></p>
 <table>
 <thead>
 <tr>
 <th>Integrante</th>
 <th>Indicador</th>
+<th>Test</th>
 <th style="text-align: right;">Persistencia</th>
 <th style="text-align: right;">LinearRegression</th>
 <th style="text-align: right;">RandomForest</th>
 <th style="text-align: right;">GBT</th>
-<th>Ganador (por CV)</th>
+<th>En producción</th>
 <th style="text-align: right;">Mejora</th>
 </tr>
 </thead>
@@ -1662,106 +1671,160 @@ volver con <code>expm1</code> lo estabiliza. Se deja como hiperparámetro y que 
 <tr>
 <td>David</td>
 <td>bytes/min</td>
-<td style="text-align: right;">148 264</td>
-<td style="text-align: right;">126 100</td>
-<td style="text-align: right;">126 945</td>
-<td style="text-align: right;"><strong>124 294</strong></td>
-<td>GBT, log, prof. 3</td>
-<td style="text-align: right;"><strong>+16,2 %</strong></td>
+<td>Histórico</td>
+<td style="text-align: right;">146 021</td>
+<td style="text-align: right;">101 750</td>
+<td style="text-align: right;">101 422</td>
+<td style="text-align: right;"><strong>99 893</strong></td>
+<td>GBT, log, solo histórico</td>
+<td style="text-align: right;"><strong>+31,6 %</strong></td>
 </tr>
 <tr>
 <td>Nick</td>
 <td>flujos/min</td>
-<td style="text-align: right;">10,32</td>
-<td style="text-align: right;">6,67</td>
-<td style="text-align: right;"><strong>5,60</strong></td>
-<td style="text-align: right;">6,29</td>
-<td>RF, original, prof. 10</td>
-<td style="text-align: right;"><strong>+45,8 %</strong></td>
+<td>Pi</td>
+<td style="text-align: right;">14,15</td>
+<td style="text-align: right;"><strong>12,07</strong></td>
+<td style="text-align: right;">12,30</td>
+<td style="text-align: right;">12,67</td>
+<td>LR, original, solo Pi</td>
+<td style="text-align: right;"><strong>+14,7 %</strong></td>
 </tr>
 <tr>
 <td>Henyelrey</td>
 <td>SYN/min</td>
-<td style="text-align: right;">1,139</td>
-<td style="text-align: right;">2,313</td>
-<td style="text-align: right;">1,976</td>
-<td style="text-align: right;"><strong>1,006</strong></td>
-<td>GBT, log, prof. 5</td>
-<td style="text-align: right;"><strong>+11,6 %</strong></td>
+<td>Pi</td>
+<td style="text-align: right;">2,81</td>
+<td style="text-align: right;"><strong>2,14</strong></td>
+<td style="text-align: right;">2,24</td>
+<td style="text-align: right;">2,28</td>
+<td>LR, original, histórico + Pi</td>
+<td style="text-align: right;"><strong>+24,1 %</strong></td>
 </tr>
 <tr>
 <td>Jhan</td>
 <td>DNS/min</td>
-<td style="text-align: right;">0,734</td>
-<td style="text-align: right;">0,595</td>
-<td style="text-align: right;">0,604</td>
-<td style="text-align: right;"><strong>0,593</strong></td>
-<td>RF, log, prof. 6</td>
-<td style="text-align: right;"><strong>+17,6 %</strong></td>
+<td>Pi</td>
+<td style="text-align: right;">2,92</td>
+<td style="text-align: right;"><strong>2,22</strong></td>
+<td style="text-align: right;">2,27</td>
+<td style="text-align: right;">2,46</td>
+<td>LR, original, histórico + Pi</td>
+<td style="text-align: right;"><strong>+23,9 %</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Tabla 2. MAE y R² en test del ganador frente a la persistencia</strong></p>
+<p><strong>Tabla 2. MAE y R² en test del modelo en producción frente a la persistencia</strong></p>
 <table>
 <thead>
 <tr>
 <th>Indicador</th>
 <th style="text-align: right;">MAE persistencia</th>
-<th style="text-align: right;">MAE ganador</th>
+<th style="text-align: right;">MAE modelo</th>
 <th style="text-align: right;">R² persistencia</th>
-<th style="text-align: right;">R² ganador</th>
+<th style="text-align: right;">R² modelo</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>bytes</td>
-<td style="text-align: right;">24 340</td>
-<td style="text-align: right;">13 997 (−43 %)</td>
-<td style="text-align: right;">−0,33</td>
-<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">23 982</td>
+<td style="text-align: right;">12 560 (−48 %)</td>
+<td style="text-align: right;">−1,04</td>
+<td style="text-align: right;">0,05</td>
 </tr>
 <tr>
 <td>flujos</td>
-<td style="text-align: right;">6,76</td>
-<td style="text-align: right;">2,93 (−57 %)</td>
-<td style="text-align: right;">−0,24</td>
-<td style="text-align: right;">0,63</td>
+<td style="text-align: right;">8,80</td>
+<td style="text-align: right;">7,58 (−14 %)</td>
+<td style="text-align: right;">0,53</td>
+<td style="text-align: right;">0,66</td>
 </tr>
 <tr>
 <td>syn</td>
-<td style="text-align: right;">0,254</td>
-<td style="text-align: right;">0,218 (−14 %)</td>
-<td style="text-align: right;">0,79</td>
-<td style="text-align: right;">0,84</td>
+<td style="text-align: right;">1,18</td>
+<td style="text-align: right;">0,98 (−17 %)</td>
+<td style="text-align: right;">−0,16</td>
+<td style="text-align: right;">0,33</td>
 </tr>
 <tr>
 <td>dns</td>
-<td style="text-align: right;">0,170</td>
-<td style="text-align: right;">0,144 (−15 %)</td>
-<td style="text-align: right;">−0,23</td>
-<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">1,16</td>
+<td style="text-align: right;">0,96 (−17 %)</td>
+<td style="text-align: right;">−0,16</td>
+<td style="text-align: right;">0,33</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tabla 3. Comparación en los últimos 2018 minutos del Pi</strong></p>
+<table>
+<thead>
+<tr>
+<th>Indicador</th>
+<th style="text-align: right;">RMSE modelo anterior</th>
+<th style="text-align: right;">RMSE candidato</th>
+<th style="text-align: right;">Mejora del anterior vs persistencia</th>
+<th>Decisión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bytes</td>
+<td style="text-align: right;">168 282</td>
+<td style="text-align: right;">173 103</td>
+<td style="text-align: right;">+21,2 %</td>
+<td>Se conserva el anterior: el candidato es peor y duplica el MAE</td>
+</tr>
+<tr>
+<td>flujos</td>
+<td style="text-align: right;">18,46</td>
+<td style="text-align: right;">12,07</td>
+<td style="text-align: right;">−30,5 %</td>
+<td>Se publica</td>
+</tr>
+<tr>
+<td>syn</td>
+<td style="text-align: right;">2,32</td>
+<td style="text-align: right;">2,14</td>
+<td style="text-align: right;">+17,5 %</td>
+<td>Se publica</td>
+</tr>
+<tr>
+<td>dns</td>
+<td style="text-align: right;">2,51</td>
+<td style="text-align: right;">2,22</td>
+<td style="text-align: right;">+14,1 %</td>
+<td>Se publica</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Lectura honesta:</strong>
-- <strong>Los 4 modelos le ganan a la persistencia en un test que nunca vieron.</strong> Por eso se justifican.
-- <strong>Flujos</strong> es el indicador más predecible (R² 0,63).
-- En <strong>bytes</strong>, el R² es bajo (0,06): los picos de descarga son difíciles de anticipar
-  un minuto antes. Aun así el error típico (MAE) baja 43 %.
-- En <strong>SYN</strong>, la persistencia ya era buena (R² 0,79), y el modelo la mejora sin empeorarla.
-- En <strong>DNS</strong>, la validación eligió RF y en test GBT quedó apenas mejor (0,593
-  contra 0,604). Se respeta la elección de la validación: elegir mirando el test sería hacer trampa.</p>
-<p><strong>Variables más importantes:</strong>
-- en <strong>flujos</strong>, los rezagos de flujos (<code>lag3_flujos</code>, <code>media5_flujos</code>);
-- en <strong>bytes</strong>, los minutos desde el dato anterior y los rezagos de flujos y bytes;
-- en <strong>DNS</strong>, la media móvil de DNS.</p>
-<p>Es decir, la memoria reciente es lo que más predice, y es justo lo que el modelo sin rezagos no tenía.</p>
+- <strong>Los 4 modelos le ganan a la persistencia en su test.</strong> El de bytes y los de
+  los otros tres indicadores se prueban con datos distintos.
+- <strong>El modelo anterior de flujos perdía contra la persistencia en datos del Pi</strong>,
+  aunque en el histórico le ganaba. Es deriva de datos: el sensor ve otra red.
+- En <strong>bytes</strong>, el R² es bajo (0,05): los picos de descarga son difíciles de
+  anticipar un minuto antes. Aun así el error típico (MAE) baja 48 %.
+- <strong>El RMSE es muy sensible a pocos picos.</strong> En bytes, quitar 2 filas de prueba del
+  histórico movió la mejora de +16,2 % a +31,6 %; el MAE es más estable (−43 % a −48 %).
+- En los tres indicadores publicados, la validación eligió la regresión lineal
+  sobre los modelos más complejos.</p>
+<p><strong>Cifras del PPT de la sustentación (30-oct-2026).</strong> Se midieron solo con el
+histórico: bytes +16,2 %, flujos +45,8 %, SYN +11,6 % y DNS +17,6 %. No son
+comparables con las de flujos, SYN y DNS de la Tabla 1.</p>
 <h3 id="14-en-produccion">1.4 En producción<a class="headerlink" href="#14-en-produccion" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Reentrenamiento automático cada 6 h con el histórico más lo que llegó en vivo.</li>
+<li>Reentrenamiento automático cada 6 h con el histórico y los datos del Pi; cada
+  corrida tarda alrededor de 1 h y pasa por la compuerta de publicación.</li>
+<li>El contenedor de entrenamiento tiene límites de memoria (2,2 GB) y CPU (1,5).</li>
 <li><code>streaming_nids.py</code> recarga el modelo nuevo sin reiniciar.</li>
 <li><strong>Anomalía de serie de tiempo:</strong> <code>real &gt; predicción + 3·RMSE_test</code>. Abre un
   incidente (<code>anomalia_trafico</code>, o <code>escaneo_red</code> si es SYN).</li>
+<li><strong>Una anomalía no prueba un ataque:</strong> significa que el valor se salió de lo
+  esperado. La categoría <code>escaneo_red</code> hoy es una señal débil, porque se basa solo
+  en el conteo de SYN, que también incluye respuestas de servidores.</li>
+<li><strong>Si el Pi cambia de puerto</strong> hay que mover <code>INICIO_SENSOR</code> y reentrenar: el
+  tráfico anterior deja de representar lo que el sensor va a ver.</li>
 </ul>
 <h2 id="2-detector-de-anomalias-por-flujo-k-means">2. Detector de anomalías por flujo (K-Means)<a class="headerlink" href="#2-detector-de-anomalias-por-flujo-k-means" title="Permanent link">&para;</a></h2>
 <h3 id="21-variables-por-flujo">2.1 Variables por flujo<a class="headerlink" href="#21-variables-por-flujo" title="Permanent link">&para;</a></h3>

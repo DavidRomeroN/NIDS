@@ -1507,7 +1507,9 @@ conviertan en incidentes?</p>
    cruzada temporal que corrigió un modelo que en test era 66 % peor que la persistencia.</li>
 </ol>
 <h2 id="3-prueba-en-vivo-de-una-anomalia">3. Prueba en vivo de una anomalía<a class="headerlink" href="#3-prueba-en-vivo-de-una-anomalia" title="Permanent link">&para;</a></h2>
-<p>Desde una PC del laboratorio:</p>
+<p>Esta prueba exige el puerto espejo. Con el Pi en un puerto normal, el tráfico de
+otra PC no se ve y hay que generarlo desde el propio Pi; todavía no está ensayado.
+Con el espejo, desde una PC del laboratorio:</p>
 <ul>
 <li><strong>Volumen (David):</strong> descargar un archivo grande o reproducir video en alta
   calidad → sube bytes/min sobre el umbral.</li>
@@ -1535,8 +1537,8 @@ real sobre el umbral, la anomalía y el incidente <code>nids-modelo</code> en Gr
 <li><strong>Predicción junto a KPIs.</strong> La mesa de TI ve en un panel cuánto hay, cuánto
    se esperaba y si se pasó del umbral; separado, tendría que cruzarlo a mano.</li>
 <li><strong>Baseline de persistencia.</strong> En tráfico, el minuto siguiente se parece al
-   actual; si el modelo no le gana, su complejidad no se justifica. En SYN, LR y
-   RF NO le ganan; solo GBT.</li>
+   actual; si el modelo no le gana, su complejidad no se justifica. Con datos del
+   Pi, el modelo anterior de flujos quedó 30,5 % peor y por eso se reemplazó.</li>
 <li><strong>KPI vs métrica técnica, y Pushgateway.</strong> "% cifrado" o "incidentes abiertos"
    son de negocio; "duración del batch" es técnica. Pushgateway es un atajo
    porque Spark Streaming en Python no expone un endpoint para Prometheus; lo
@@ -1546,15 +1548,15 @@ real sobre el umbral, la anomalía y el incidente <code>nids-modelo</code> en Gr
    5 filas por sensor en memoria le gana en los 4 indicadores, y esas filas se
    reconstruyen del Data Lake al reiniciar (<a href="../modelos/#11-dataset-supervisado">Modelos</a>).</li>
 <li><strong>¿Cómo predice si el tráfico real cambia?</strong> Cada 6 h se reentrena con el
-   histórico más lo que llegó en vivo; si un modelo deja de ganarle a la
-   persistencia, el tablero lo muestra (mejora negativa).</li>
+   histórico y los datos del Pi. Un modelo solo se reemplaza si, en el mismo test,
+   le gana a la persistencia y al actual (<a href="../modelos/#14-en-produccion">Modelos</a>).</li>
 </ol>
 <h2 id="5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio">5. Plan B: el Pi no tiene internet en el laboratorio<a class="headerlink" href="#5-plan-b-el-pi-no-tiene-internet-en-el-laboratorio" title="Permanent link">&para;</a></h2>
-<p><code>eth0</code> está en el puerto espejo, que solo escucha, así que la subida a la nube
-va por WiFi. El Pi ya guarda la red del hotspot del celular (<code>pi/bin/nids-wifi.sh</code>).</p>
+<p>Hoy el Pi usa <code>eth0</code> en un puerto normal para capturar y subir. Si se instala en
+un espejo, que solo escucha, la subida iría por otra salida (<code>pi/bin/nids-wifi.sh</code>
+guarda redes WiFi; el perfil se configura antes de usarlo).</p>
 <ol>
-<li><strong>Primero:</strong> encender el hotspot del celular con el mismo nombre y la misma
-   clave. En 1 minuto el panel "Segundos desde el último archivo" vuelve a verde.</li>
+<li><strong>Primero:</strong> revisar el cable y el panel "Segundos desde el último archivo".</li>
 <li><strong>Si aun así no conecta:</strong> encender el reproductor del histórico en la VM:
    <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span>respaldo<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>reproductor
 </code></pre></div>
@@ -1569,7 +1571,6 @@ va por WiFi. El Pi ya guarda la red del hotspot del celular (<code>pi/bin/nids-w
 <ul>
 <li>[ ] Grafana abre (http://&lt;IP_VM&gt;:3000) y el panel "Segundos desde el último archivo" está en verde.</li>
 <li>[ ] <code>docker compose ps</code>: todo <code>Up</code> (kafka-topicos aparece como <code>Exited (0)</code>, es normal).</li>
-<li>[ ] Hotspot del celular encendido si el Pi no tiene otra salida a internet.</li>
 <li>[ ] Túnel SSH listo para Kafka UI si lo piden.</li>
 <li>[ ] Cada integrante abrió su notebook y su página.</li>
 </ul>

@@ -833,10 +833,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1370,10 +1370,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resultado-del-modelo-en-vivo-test" class="md-nav__link">
+  <a href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resultado del modelo en vivo (test)
+        Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
       
     </span>
   </a>
@@ -1474,7 +1474,7 @@
 <tr>
 <td>Predicción</td>
 <td>DNS de la próxima hora</td>
-<td>DNS del minuto siguiente (RandomForest log)</td>
+<td>DNS del minuto siguiente (regresión lineal)</td>
 </tr>
 <tr>
 <td>Dónde se ve</td>
@@ -1483,7 +1483,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="resultado-del-modelo-en-vivo-test">Resultado del modelo en vivo (test)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test" title="Permanent link">&para;</a></h2>
+<h2 id="resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026">Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)<a class="headerlink" href="#resultado-del-modelo-en-vivo-test-con-datos-del-pi-6-nov-2026" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1496,33 +1496,33 @@
 <tbody>
 <tr>
 <td>Persistencia</td>
-<td style="text-align: right;">0,734</td>
-<td style="text-align: right;">0,170</td>
-<td style="text-align: right;">−0,23</td>
+<td style="text-align: right;">2,92</td>
+<td style="text-align: right;">1,16</td>
+<td style="text-align: right;">−0,16</td>
 </tr>
 <tr>
-<td>LinearRegression (log)</td>
-<td style="text-align: right;">0,595</td>
-<td style="text-align: right;">0,148</td>
-<td style="text-align: right;">0,19</td>
+<td><strong>LinearRegression, histórico + Pi — ganador</strong></td>
+<td style="text-align: right;"><strong>2,22</strong></td>
+<td style="text-align: right;"><strong>0,96</strong></td>
+<td style="text-align: right;"><strong>0,33</strong></td>
 </tr>
 <tr>
-<td><strong>RandomForest (log, profundidad 6) — ganador por validación</strong></td>
-<td style="text-align: right;"><strong>0,604</strong></td>
-<td style="text-align: right;"><strong>0,144</strong></td>
-<td style="text-align: right;"><strong>0,17</strong></td>
+<td>RandomForest</td>
+<td style="text-align: right;">2,27</td>
+<td style="text-align: right;">0,93</td>
+<td style="text-align: right;">0,30</td>
 </tr>
 <tr>
-<td>GBT (log)</td>
-<td style="text-align: right;">0,593</td>
-<td style="text-align: right;">0,143</td>
-<td style="text-align: right;">0,20</td>
+<td>GBT</td>
+<td style="text-align: right;">2,46</td>
+<td style="text-align: right;">0,92</td>
+<td style="text-align: right;">0,18</td>
 </tr>
 </tbody>
 </table>
-<p><strong>+17,6 % de RMSE frente a la persistencia.</strong> La validación eligió RF; en test
-GBT quedó apenas mejor. No se cambia el ganador mirando el test: eso sería
-contaminar la evaluación.</p>
+<p><strong>+23,9 % de RMSE frente a la persistencia.</strong> El +17,6 % del PPT se midió solo con el
+histórico, así que las dos cifras no se comparan. La validación eligió el modelo:
+no se cambia el ganador mirando el test.</p>
 <h2 id="el-evento-empresarial-incidentes-seguridad-mi-rol">El evento empresarial: <code>incidentes-seguridad</code> (mi rol)<a class="headerlink" href="#el-evento-empresarial-incidentes-seguridad-mi-rol" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Contrato v1.1</strong> (ver <a href="../../ingesta/">Ingesta</a>): <code>incidenteId</code> como key, para
