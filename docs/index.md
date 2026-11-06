@@ -63,7 +63,7 @@ flowchart LR
 |---|---|
 | Stack en la nube (Azure, Docker Compose, 14 servicios) | ✅ En producción |
 | Histórico TRCU.csv (397 354 flujos, 1-jul a 1-sep-2026) | ✅ Procesado |
-| Modelos de serie de tiempo (4 indicadores) | ✅ Entrenados y en vivo |
+| Modelos de serie de tiempo (4 indicadores) | ✅ En vivo; reentrenados con datos del Pi el 6-nov-2026, salvo bytes, que conserva su modelo |
 | Detector K-Means por flujo | ✅ Entrenado y en vivo |
-| Sensor Raspberry Pi 5 | ✅ Probado de punta a punta; se instala en la U el 30-oct-2026 |
+| Sensor Raspberry Pi 5 | ✅ En la sala docentes desde el 30-oct-2026, en un **puerto normal**: ve sobre todo anuncios de la red y fragmentos del tráfico de otras PC. Falta conectarlo al puerto espejo |
 | Tablero Grafana | ✅ Público con contraseña |

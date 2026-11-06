@@ -164,20 +164,28 @@ services:
       pushgateway:
         condition: service_started
 
-  # Reentrena los modelos de series de tiempo cada 6 h sobre el histórico
-  # TRCU.csv + el Data Lake que va llenando spark-streaming (mismo patrón de
-  # S10: lead + división cronológica + baseline de persistencia + LR vs RF).
+  # Reentrena las series de tiempo con el sensor en vivo, solo o junto al histórico
+  # TRCU.csv. Cada corrida tarda ~1 h y solo reemplaza un modelo si, en el último
+  # 20 % del sensor, le gana a la persistencia y al modelo actual. Con límites de
+  # memoria y CPU para no quitarle recursos a spark-streaming.
   spark-entrenamiento:
     build: ./spark
     container_name: nids-spark-entrenamiento
     restart: unless-stopped
     command: python /jobs/entrenar_series.py --bucle
+    mem_limit: 2200m
+    memswap_limit: 2200m
+    cpus: 1.5
     environment:
       PUSHGATEWAY_URL: http://pushgateway:9091
       DATA_DIR: /data
       MINUTOS_ENTRE_ENTRENAMIENTOS: "360"
-      # Datos en vivo fuera del entrenamiento hasta tener varios días del punto nuevo.
-      SENSORES_EXCLUIDOS: "replay-trcu,nids-pi-01,prueba-vm"
+      SPARK_DRIVER_MEMORY: 1600m
+      ESPERA_INICIAL_MIN: "360"
+      SENSORES_EXCLUIDOS: "replay-trcu,prueba-vm"
+      SENSOR_OBJETIVO: nids-pi-01
+      # Mover esta fecha si el Pi cambia de puerto: antes ve otro tráfico.
+      INICIO_SENSOR: "2026-10-30 10:40:00"
       TZ: America/Lima
     volumes:
       - ./spark/jobs:/jobs:ro

@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from itertools import product
 
-from pyspark.ml import Pipeline
+from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import SQLTransformer, VectorAssembler
 from pyspark.ml.regression import GBTRegressor, LinearRegression, RandomForestRegressor
@@ -18,40 +18,52 @@ from comun import (FEATURES_MODELO, INDICADORES, LAKE_DIR, MODELOS_DIR, con_reza
 
 
 # Entrenamiento de las series de tiempo. Base de S10, más lo que pide un
-# modelo de producción:
+# modelo de producción que vive en un punto concreto de la red:
 #   1. dataset supervisado con lead(indicador, 1) en orden cronológico, sobre
-#      el histórico TRCU.csv + lo que ya llegó en vivo
+#      el histórico TRCU.csv + lo que ya llegó en vivo del sensor
 #   2. rezagos (lag 1-3 y media móvil de 5 min de cada indicador)
-#   3. test = último 20 % en el tiempo, que no se toca hasta el final
-#   4. selección de hiperparámetros con validación cruzada temporal (rolling
-#      origin, 3 cortes: entrenar hasta 50/60/70 % y validar el 10 % siguiente);
-#      nunca randomSplit
-#   5. la escala también es un hiperparámetro: el tráfico tiene cola pesada
-#      (minutos tranquilos y picos de MB), así que se prueba aprender en
-#      log1p() y volver con expm1(); se evalúa siempre en la escala original
-#   6. persistencia como baseline obligatorio; LinearRegression, RandomForest
-#      y GBT compiten; gana el de menor RMSE promedio en validación
-#   7. el ganador se reentrena con todo lo anterior al test y se guarda como
-#      PipelineModel; streaming_nids.py lo recarga solo
-# Si ningún modelo le gana a la persistencia en test, se reporta así.
-MINIMO_FILAS = int(os.getenv("MINIMO_FILAS", "60"))
+#   3. test = último 20 % del tiempo del sensor, que no se toca hasta el final
+#   4. selección con validación cruzada temporal (rolling origin, 3 cortes sobre
+#      el sensor); nunca randomSplit. Se valida siempre con datos del sensor,
+#      porque es donde el modelo va a predecir
+#   5. dos estrategias compiten: solo el sensor, o histórico + sensor
+#   6. la escala también es un hiperparámetro: se prueba aprender en log1p() y
+#      volver con expm1(); se evalúa siempre en la escala original
+#   7. persistencia como baseline; LinearRegression, RandomForest y GBT compiten;
+#      gana la configuración de menor RMSE promedio en validación
+#   8. el ganador solo reemplaza al modelo en producción si, en el mismo test, le
+#      gana a la persistencia, mejora el RMSE actual al menos 1 % y no empeora el
+#      MAE más de 10 %. Si no, producción no cambia
+#   9. se publica el mismo modelo que se midió en el test, que por eso nunca vio
+#      ese tramo: la comparación con el siguiente candidato sigue siendo justa.
+#      streaming_nids.py lo recarga solo y usa ese RMSE para su umbral de anomalía
+MINIMO_FILAS = int(os.getenv("MINIMO_FILAS", "1440"))  # filas del sensor: al menos un día
+MEJORA_MINIMA_RMSE = 0.01  # evita cambiar de modelo por diferencias de ruido
+EMPEORA_MAXIMO_MAE = 0.10  # un pico puede bajar el RMSE y doblar el error típico
 MINUTOS_ENTRE_ENTRENAMIENTOS = float(os.getenv("MINUTOS_ENTRE_ENTRENAMIENTOS", "360"))
+# Tras publicar modelos a mano, evita repetir de inmediato un entrenamiento de ~1 h.
+ESPERA_INICIAL_MIN = float(os.getenv("ESPERA_INICIAL_MIN", "0"))
 
 FUENTES = ["historico_minuto", "trafico_minuto"]  # TRCU.csv (batch) + stream en vivo
 # El plan B de la demo reproduce TRCU.csv: ya está en historico_minuto, no es dato nuevo.
-# Un punto de captura nuevo también se excluye hasta juntar varios días: con pocas
-# horas de otra red el test se llena de deriva (SYN llegó a −169 % vs persistencia).
-SENSORES_EXCLUIDOS = os.getenv("SENSORES_EXCLUIDOS", "replay-trcu").split(",")
+SENSORES_EXCLUIDOS = os.getenv("SENSORES_EXCLUIDOS", "replay-trcu,prueba-vm").split(",")
+# Sensor donde va a predecir el modelo y desde cuándo está en su punto de captura.
+# Si el sensor cambia de puerto (p. ej. al espejo), hay que mover INICIO_SENSOR:
+# el tráfico anterior ya no representa lo que va a ver.
+SENSOR_OBJETIVO = os.getenv("SENSOR_OBJETIVO", "nids-pi-01")
+INICIO_SENSOR = os.getenv("INICIO_SENSOR", "2026-10-30 10:40:00")
 COLUMNAS_MINUTO = ["ventana_inicio", "ventana_fin", "sensorId", "flujos", "paquetes", "bytes",
                    "hosts", "tcp", "udp", "dns", "bytes_tls", "syn", "bytes_externos"]
 
+ESTRATEGIAS = ["solo_sensor", "historico_y_sensor"]
 ESCALAS = ["original", "log"]
 GRILLAS = {
     "linear_regression": (LinearRegression, {"regParam": [0.0, 0.1]}),
     "random_forest": (RandomForestRegressor, {"numTrees": [40], "maxDepth": [6, 10]}),
     "gbt": (GBTRegressor, {"maxIter": [50], "maxDepth": [3, 5]}),
 }
-CORTES_VALIDACION = [(0.5, 0.6), (0.6, 0.7), (0.7, 0.8)]
+# Fracciones del tramo del sensor anterior al test: entrenar hasta el corte y validar lo siguiente.
+CORTES_VALIDACION = [(0.55, 0.70), (0.70, 0.85), (0.85, 1.0)]
 INICIO_TEST = 0.8
 
 # Variables que no se pasan a log: ya están en escalas chicas.
@@ -87,12 +99,9 @@ def dataset_supervisado(spark):
     df = df.where(F.col("siguiente_inicio") == F.col("ventana_fin"))
     for columna in FEATURES_MODELO:
         df = df.withColumn(columna, F.col(columna).cast("double"))
-    posicion = F.row_number().over(Window.orderBy("ventana_inicio", "sensorId"))
-    return df.withColumn("posicion", posicion)
-
-
-def tramo(df, total, desde, hasta):
-    return df.where((F.col("posicion") > int(total * desde)) & (F.col("posicion") <= int(total * hasta)))
+    # Lo capturado antes de llegar al punto actual no representa esta red.
+    inicio = F.lit(INICIO_SENSOR).cast("timestamp")
+    return df.where((F.col("sensorId") != SENSOR_OBJETIVO) | (F.col("ventana_inicio") >= inicio))
 
 
 def armar_pipeline(clase, parametros, escala, indicador):
@@ -137,34 +146,61 @@ def importancias(modelo, escala):
     return {nombre: round(float(valor), 4) for nombre, valor in pares}
 
 
-def entrenar_indicador(df, total, indicador):
-    objetivo = f"objetivo_{indicador}"
-    test = tramo(df, total, INICIO_TEST, 1.0)
-    previo_test = tramo(df, total, 0.0, INICIO_TEST)
+def metricas_en_produccion(destino, test, objetivo):
+    """Métricas del modelo que hoy corre en vivo, medidas en el mismo test que el candidato."""
+    if not os.path.exists(f"{destino}/metricas.json"):
+        return None
+    with open(f"{destino}/metricas.json", encoding="utf-8") as archivo:
+        escala = json.load(archivo)["escala"]
+    modelo = PipelineModel.load(f"{destino}/modelo")
+    return evaluar(a_escala_original(modelo.transform(test), escala), objetivo)
 
-    # 1. Validación cruzada temporal: cada configuración se entrena 3 veces.
+
+def entrenar_indicador(df, tiempos, indicador):
+    objetivo = f"objetivo_{indicador}"
+    ventana = F.col("ventana_inicio")
+    es_sensor = F.col("sensorId") == SENSOR_OBJETIVO
+    previos = int(len(tiempos) * INICIO_TEST)
+    inicio_test = tiempos[previos]
+    test = df.where(es_sensor & (ventana >= F.lit(inicio_test)))
+
+    def entrenamiento(estrategia, condicion_sensor):
+        filtro = es_sensor & condicion_sensor
+        return df.where(filtro if estrategia == "solo_sensor" else (filtro | ~es_sensor))
+
+    # 1. Validación cruzada temporal: las dos estrategias se validan en los mismos tramos del sensor.
     busqueda = []
-    for nombre, (clase, grilla) in GRILLAS.items():
-        claves = list(grilla)
-        for valores in product(*(grilla[c] for c in claves)):
-            for escala in ESCALAS:
-                parametros = dict(zip(claves, valores))
-                rmses = []
-                for hasta, valida_hasta in CORTES_VALIDACION:
-                    modelo = armar_pipeline(clase, parametros, escala, indicador).fit(tramo(df, total, 0.0, hasta))
-                    validacion = a_escala_original(modelo.transform(tramo(df, total, hasta, valida_hasta)), escala)
-                    rmses.append(evaluar(validacion, objetivo)["rmse"])
-                busqueda.append({"modelo": nombre, "parametros": parametros, "escala": escala,
-                                 "rmse_cv": sum(rmses) / len(rmses), "rmse_por_corte": rmses})
+    for estrategia in ESTRATEGIAS:
+        for nombre, (clase, grilla) in GRILLAS.items():
+            claves = list(grilla)
+            for valores in product(*(grilla[c] for c in claves)):
+                for escala in ESCALAS:
+                    parametros = dict(zip(claves, valores))
+                    rmses = []
+                    for desde, hasta in CORTES_VALIDACION:
+                        corte = tiempos[int(previos * desde)]
+                        fin = tiempos[int(previos * hasta)]
+                        modelo = armar_pipeline(clase, parametros, escala, indicador).fit(
+                            entrenamiento(estrategia, ventana < F.lit(corte)))
+                        validacion = df.where(es_sensor & (ventana >= F.lit(corte)) & (ventana < F.lit(fin)))
+                        rmses.append(evaluar(a_escala_original(modelo.transform(validacion), escala),
+                                             objetivo)["rmse"])
+                    busqueda.append({"estrategia": estrategia, "modelo": nombre, "parametros": parametros,
+                                     "escala": escala, "rmse_cv": sum(rmses) / len(rmses), "rmse_por_corte": rmses})
+    mejor_global = min(busqueda, key=lambda c: c["rmse_cv"])
+    estrategia = mejor_global["estrategia"]
     mejores = {}
     for config in busqueda:
+        if config["estrategia"] != estrategia:
+            continue
         actual = mejores.get(config["modelo"])
         if actual is None or config["rmse_cv"] < actual["rmse_cv"]:
             mejores[config["modelo"]] = config
-    ganador = min(mejores, key=lambda n: mejores[n]["rmse_cv"])
+    ganador = mejor_global["modelo"]
 
     # 2. Test: cada algoritmo con su mejor configuración, reentrenado con todo
     #    lo anterior al test. El test no participó en ninguna decisión.
+    previo_test = entrenamiento(estrategia, ventana < F.lit(inicio_test))
     resultados = {"persistencia": evaluar(test.withColumn("prediction", F.col(indicador)), objetivo)}
     finales = {}
     for nombre, config in mejores.items():
@@ -173,19 +209,38 @@ def entrenar_indicador(df, total, indicador):
         resultados[nombre] = evaluar(a_escala_original(modelo.transform(test), config["escala"]), objetivo)
 
     rmse_base = resultados["persistencia"]["rmse"]
-    mejora = 100 * (rmse_base - resultados[ganador]["rmse"]) / rmse_base if rmse_base else 0.0
+    rmse_nuevo = resultados[ganador]["rmse"]
+    mejora = 100 * (rmse_base - rmse_nuevo) / rmse_base if rmse_base else 0.0
 
+    # 3. Compuerta: producción solo cambia si el candidato gana en el mismo test.
     destino = f"{MODELOS_DIR}/{indicador}"
+    actual = metricas_en_produccion(destino, test, objetivo)
+    mae_nuevo = resultados[ganador]["mae"]
+    publicar = rmse_nuevo < rmse_base and (actual is None or (
+        rmse_nuevo < actual["rmse"] * (1 - MEJORA_MINIMA_RMSE)
+        and mae_nuevo <= actual["mae"] * (1 + EMPEORA_MAXIMO_MAE)))
+    decision = {"indicador": indicador, "ganador": ganador, "escala": mejor_global["escala"],
+                "estrategia": estrategia, "rmseCandidato": rmse_nuevo, "maeCandidato": mae_nuevo,
+                "produccion": actual, "rmsePersistencia": rmse_base, "publicado": publicar}
+    if not publicar:
+        log(componente="entrenamiento", status="modelo_conservado", **decision)
+        return
+
+    # 4. metricas.json va al final y de forma atómica: es la señal de "modelo
+    #    listo" para streaming.
+    final = finales[ganador]
     temporal = f"{destino}/modelo_nuevo"
     shutil.rmtree(temporal, ignore_errors=True)
-    finales[ganador].write().overwrite().save(temporal)
+    final.write().overwrite().save(temporal)
     shutil.rmtree(f"{destino}/modelo", ignore_errors=True)
     os.replace(temporal, f"{destino}/modelo")
 
     metricas = {
         "indicador": indicador,
         "entrenado": datetime.now().isoformat(timespec="seconds"),
-        "filas_total": total,
+        "estrategia": estrategia,
+        "sensor_objetivo": SENSOR_OBJETIVO,
+        "filas_total": previo_test.count() + test.count(),
         "filas_test": test.count(),
         "cortes_validacion": CORTES_VALIDACION,
         "features": FEATURES_MODELO,
@@ -193,16 +248,35 @@ def entrenar_indicador(df, total, indicador):
         "mejor_configuracion": mejores,
         "resultados_test": resultados,
         "ganador": ganador,
-        "escala": mejores[ganador]["escala"],
-        "rmse_ganador": resultados[ganador]["rmse"],
+        "escala": mejor_global["escala"],
+        "rmse_ganador": rmse_nuevo,
         "mejora_vs_persistencia_pct": mejora,
         "le_gana_a_persistencia": mejora > 0,
-        "importancia_variables": importancias(finales[ganador], mejores[ganador]["escala"]),
+        "importancia_variables": importancias(final, mejor_global["escala"]),
     }
-    # metricas.json se escribe al final: es la señal de "modelo listo" para streaming.
-    with open(f"{destino}/metricas.json", "w", encoding="utf-8") as archivo:
+    with open(f"{destino}/metricas.tmp", "w", encoding="utf-8") as archivo:
         json.dump(metricas, archivo, indent=2)
-    return metricas
+    os.replace(f"{destino}/metricas.tmp", f"{destino}/metricas.json")
+    log(componente="entrenamiento", status="modelo_publicado", importancia=metricas["importancia_variables"],
+        configuracion=mejor_global["parametros"], mejoraVsPersistenciaPct=round(mejora, 2), **decision)
+
+
+def lineas_metricas(indicador):
+    """Lo que publica Grafana: siempre el modelo que de verdad está en producción."""
+    ruta = f"{MODELOS_DIR}/{indicador}/metricas.json"
+    if not os.path.exists(ruta):
+        return []
+    with open(ruta, encoding="utf-8") as archivo:
+        metricas = json.load(archivo)
+    lineas = []
+    for modelo, valores in metricas["resultados_test"].items():
+        for nombre in ["rmse", "mae", "r2"]:
+            lineas.append(f'nids_modelo_{nombre}{{indicador="{indicador}",modelo="{modelo}"}} {valores[nombre]}')
+    lineas.append(f'nids_modelo_mejora_vs_persistencia_pct{{indicador="{indicador}"}} '
+                  f'{metricas["mejora_vs_persistencia_pct"]}')
+    lineas.append(f'nids_modelo_ganador_info{{indicador="{indicador}",ganador="{metricas["ganador"]}",'
+                  f'escala="{metricas["escala"]}"}} 1')
+    return lineas
 
 
 def entrenar_todo(spark):
@@ -211,29 +285,19 @@ def entrenar_todo(spark):
         log(componente="entrenamiento", status="sin_datos")
         return False
     df = df.cache()
-    total = df.count()
-    if total < MINIMO_FILAS:
-        log(componente="entrenamiento", status="datos_insuficientes", filas=total, minimo=MINIMO_FILAS)
+    tiempos = [fila.ventana_inicio for fila in
+               df.where(F.col("sensorId") == SENSOR_OBJETIVO).select("ventana_inicio")
+                 .orderBy("ventana_inicio").collect()]
+    if len(tiempos) < MINIMO_FILAS:
+        log(componente="entrenamiento", status="datos_insuficientes", filas=len(tiempos), minimo=MINIMO_FILAS)
         df.unpersist()
         return False
 
-    lineas = [f"nids_modelo_filas_entrenamiento {total}"]
+    lineas = [f"nids_modelo_filas_entrenamiento {df.count()}"]
     for indicador in INDICADORES:
         os.makedirs(f"{MODELOS_DIR}/{indicador}", exist_ok=True)
-        metricas = entrenar_indicador(df, total, indicador)
-        for modelo, valores in metricas["resultados_test"].items():
-            for nombre, valor in valores.items():
-                lineas.append(f'nids_modelo_{nombre}{{indicador="{indicador}",modelo="{modelo}"}} {valor}')
-        lineas.append(f'nids_modelo_mejora_vs_persistencia_pct{{indicador="{indicador}"}} '
-                      f'{metricas["mejora_vs_persistencia_pct"]}')
-        lineas.append(f'nids_modelo_ganador_info{{indicador="{indicador}",ganador="{metricas["ganador"]}",'
-                      f'escala="{metricas["escala"]}"}} 1')
-        log(componente="entrenamiento", status="modelo_entrenado", indicador=indicador,
-            ganador=metricas["ganador"], escala=metricas["escala"], filas=total,
-            resultadosTest=metricas["resultados_test"],
-            configuracion=metricas["mejor_configuracion"][metricas["ganador"]]["parametros"],
-            mejoraVsPersistenciaPct=round(metricas["mejora_vs_persistencia_pct"], 2),
-            importancia=metricas["importancia_variables"])
+        entrenar_indicador(df, tiempos, indicador)
+        lineas += lineas_metricas(indicador)
     lineas.append(f"nids_modelo_ultimo_entrenamiento_timestamp {time.time()}")
     push("nids_modelo", "entrenamiento", "\n".join(lineas) + "\n")
     df.unpersist()
@@ -246,6 +310,7 @@ def main():
     args = parser.parse_args()
 
     spark = crear_spark("nids-entrenamiento")
+    time.sleep(ESPERA_INICIAL_MIN * 60)
     while True:
         entrenado = False
         try:

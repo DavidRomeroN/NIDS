@@ -9,21 +9,21 @@
 | Pregunta | ¿Qué intentos de conexión quedan sin respuesta y quién escanea puertos? | ¿Hay un pico de intentos de conexión (posible escaneo) ahora? |
 | Indicador | SYN por hora, % de SYN sin respuesta, puertos distintos por origen y minuto | SYN por minuto |
 | Instrumento | Silver (TRCU.csv) | Kafka `trafico-flujos` → Spark |
-| Predicción | SYN de la próxima hora | SYN del minuto siguiente (GBT log) |
+| Predicción | SYN de la próxima hora | SYN del minuto siguiente (regresión lineal) |
 | Dónde se ve | [Notebook 03](../notebooks/03_henyelrey_intentos_syn.ipynb) | Grafana, fila "Dimensión 3 (Henyelrey Garcia)" |
 
-## Resultado del modelo en vivo (test)
+## Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
 
 | Modelo | RMSE | MAE | R² |
 |---|---:|---:|---:|
-| Persistencia | 1,139 | 0,254 | 0,79 |
-| LinearRegression (log) | 2,313 | 0,250 | 0,14 |
-| RandomForest (log) | 1,976 | 0,239 | 0,37 |
-| **GBT (log, profundidad 5) — ganador** | **1,006** | **0,218** | **0,84** |
+| Persistencia | 2,81 | 1,18 | −0,16 |
+| **LinearRegression, histórico + Pi — ganador** | **2,14** | **0,98** | **0,33** |
+| RandomForest | 2,24 | 0,98 | 0,27 |
+| GBT | 2,28 | 0,93 | 0,24 |
 
-**+11,6 % de RMSE frente a la persistencia.** Acá la persistencia ya era fuerte
-(R² 0,79): LR y RF quedan peor que ella, y solo el GBT la supera. Es el caso
-donde más se nota por qué hay que comparar contra el baseline.
+**+24,1 % de RMSE frente a la persistencia.** El +11,6 % del PPT se midió solo con el
+histórico, así que las dos cifras no se comparan. El conteo de SYN también incluye
+respuestas de servidores: un pico es una señal para revisar, no un escaneo confirmado.
 
 ## Qué muestro en mi demo (3 min)
 
@@ -55,6 +55,6 @@ GBT que en test quedaba 66 % peor que la persistencia.
   métricas serían optimistas e irreales.
 - **¿Para qué particionar por fecha?** Para que una consulta de un día lea
   solo esa carpeta y no los 43 días: el plan físico lo muestra en `PartitionFilters`.
-- **¿Qué pasa si el modelo deja de servir?** Se reentrena cada 6 h con lo nuevo,
-  y el panel "Error absoluto en vivo" muestra si el modelo empieza a
+- **¿Qué pasa si el modelo deja de servir?** Se reentrena cada 6 h y solo se
+  reemplaza si gana en el mismo test; el panel "Error absoluto en vivo" muestra si el modelo empieza a
   equivocarse más que la persistencia en producción.

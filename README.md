@@ -30,10 +30,12 @@ flowchart LR
 
 | Integrante | Indicador | Modelo ganador | Mejora del RMSE vs persistencia (test ciego) |
 |---|---|---|---:|
-| David Romero | bytes/min | GBT (escala log) | +16,2 % |
-| Nick Mayta | flujos/min | Random Forest | +45,8 % |
-| Henyelrey Garcia | SYN/min | GBT (escala log) | +11,6 % |
-| Jhan Ramos | DNS/min | Random Forest (escala log) | +17,6 % |
+| David Romero | bytes/min | GBT (escala log) | +31,6 % (test del histórico) |
+| Nick Mayta | flujos/min | Regresión lineal | +14,7 % (test del Pi) |
+| Henyelrey Garcia | SYN/min | Regresión lineal | +24,1 % (test del Pi) |
+| Jhan Ramos | DNS/min | Regresión lineal | +23,9 % (test del Pi) |
+
+Detalle y comparación con las cifras anteriores en [Modelos](docs/modelos.md).
 
 Detector de anomalías por flujo: K-Means con k = 6 (silhouette 0,83), umbral
 en el percentil 99,5 de 397 354 flujos históricos.

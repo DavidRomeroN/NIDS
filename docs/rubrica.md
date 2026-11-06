@@ -25,7 +25,7 @@ Todo es verificable en vivo (logs, tablero, Kafka) o en el repositorio.
 | 4 | **Observabilidad** con métricas correlacionadas | Lag Kafka→Spark, duración de batch, latencia extremo a extremo, último archivo del sensor, interfaz espejo vs pipeline, CPU/RAM de la VM | [Observabilidad](observabilidad.md), Grafana |
 | 5 | **Costos** y criterios de escalado | Costo real en Azure, carga medida, umbrales de escalado, escenario de campus completo | [Costos](costos.md) |
 | 6 | Salidas **BI/ML** con KPIs en vivo | Tablero único con KPIs de negocio (Mbps, hosts, % cifrado, incidentes, MTTR) junto a la predicción | [Tablero](dashboard.md) |
-| 7 | Serie de tiempo **validada** e integrada al tablero | 4 modelos con validación cruzada temporal, test ciego del último 20 %, comparación contra persistencia (+11,6 % a +45,8 %), error medido en vivo | [Modelos](modelos.md), notebooks 01-04 |
+| 7 | Serie de tiempo **validada** e integrada al tablero | 4 modelos con validación cruzada temporal, test ciego del último 20 %, comparación contra persistencia (+14,7 % a +31,6 %), compuerta de publicación, error medido en vivo | [Modelos](modelos.md), notebooks 01-04 |
 | 8 | Sustentación individual | Una página por integrante con su dimensión U1/U2, su demo y sus respuestas | [Integrantes](integrantes/david.md), [Guion](sustentacion.md) |
 
 ## Unidad 3 — Sistema integrado (producto final)

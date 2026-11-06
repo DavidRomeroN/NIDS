@@ -104,5 +104,5 @@ print("\nVariables más importantes:", m["importancia_variables"])
 #   RF −17,2 %). A escala de hora el volumen es demasiado errático; esta es la
 #   razón para bajar a **minutos con rezagos** en U2.
 # - **U2 (por minuto):** con rezagos y escala log, el GBT sí le gana a la
-#   persistencia en test (+16,2 % RMSE, −43 % MAE). En Grafana (fila
+#   persistencia en test (+31,6 % RMSE, −48 % MAE; +16,2 % en la primera corrida). En Grafana (fila
 #   "Dimensión 1") se ve real vs predicción vs persistencia y el umbral de anomalía.

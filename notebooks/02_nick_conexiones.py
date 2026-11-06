@@ -91,6 +91,6 @@ print("\nVariables más importantes:", m["importancia_variables"])
 #   anuncios), el p90 60 s y el p99 120 s, que es el corte máximo del extractor.
 # - En promedio hay **11,4 flujos por minuto** (p99 = 46, máximo 148).
 # - **U1 (por hora):** el Random Forest mejora 14 % el RMSE frente a la persistencia.
-# - **U2 (por minuto):** es el indicador más predecible del proyecto (RF,
-#   +45,8 %, R² 0,63). Un salto de conexiones sin salto de bytes es la señal
+# - **U2 (por minuto):** con datos reales del Pi gana la regresión lineal
+#   (+14,7 %, R² 0,66). Un salto de conexiones sin salto de bytes es la señal
 #   típica de escaneo o malware, por eso se cruza con SYN y con el K-Means.

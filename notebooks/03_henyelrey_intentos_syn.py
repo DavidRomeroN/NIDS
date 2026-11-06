@@ -96,6 +96,6 @@ print("\nVariables más importantes:", m["importancia_variables"])
 #   distintos tocó en un mismo minuto llegó a 11. Un escaneo real tocaría
 #   cientos; este valor sirve de umbral de referencia.
 # - **U1 (por hora):** el Random Forest mejora 20 % el RMSE frente a la persistencia.
-# - **U2 (por minuto):** acá la persistencia ya es fuerte (R² 0,79); LR y RF
-#   quedan PEOR que ella y solo el GBT la supera (+11,7 %). Si el SYN real
+# - **U2 (por minuto):** con datos reales del Pi gana la regresión lineal
+#   (histórico + Pi, +24,1 %). Si el SYN real
 #   supera la predicción + 3·RMSE, Spark abre solo un incidente **alta / escaneo_red**.

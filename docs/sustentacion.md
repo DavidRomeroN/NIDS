@@ -35,7 +35,9 @@ conviertan en incidentes?
 
 ## 3. Prueba en vivo de una anomalía
 
-Desde una PC del laboratorio:
+Esta prueba exige el puerto espejo. Con el Pi en un puerto normal, el tráfico de
+otra PC no se ve y hay que generarlo desde el propio Pi; todavía no está ensayado.
+Con el espejo, desde una PC del laboratorio:
 
 - **Volumen (David):** descargar un archivo grande o reproducir video en alta
   calidad → sube bytes/min sobre el umbral.
@@ -64,8 +66,8 @@ real sobre el umbral, la anomalía y el incidente `nids-modelo` en Grafana.
 5. **Predicción junto a KPIs.** La mesa de TI ve en un panel cuánto hay, cuánto
    se esperaba y si se pasó del umbral; separado, tendría que cruzarlo a mano.
 6. **Baseline de persistencia.** En tráfico, el minuto siguiente se parece al
-   actual; si el modelo no le gana, su complejidad no se justifica. En SYN, LR y
-   RF NO le ganan; solo GBT.
+   actual; si el modelo no le gana, su complejidad no se justifica. Con datos del
+   Pi, el modelo anterior de flujos quedó 30,5 % peor y por eso se reemplazó.
 7. **KPI vs métrica técnica, y Pushgateway.** "% cifrado" o "incidentes abiertos"
    son de negocio; "duración del batch" es técnica. Pushgateway es un atajo
    porque Spark Streaming en Python no expone un endpoint para Prometheus; lo
@@ -75,16 +77,16 @@ real sobre el umbral, la anomalía y el incidente `nids-modelo` en Grafana.
    5 filas por sensor en memoria le gana en los 4 indicadores, y esas filas se
    reconstruyen del Data Lake al reiniciar ([Modelos](modelos.md#11-dataset-supervisado)).
 9. **¿Cómo predice si el tráfico real cambia?** Cada 6 h se reentrena con el
-   histórico más lo que llegó en vivo; si un modelo deja de ganarle a la
-   persistencia, el tablero lo muestra (mejora negativa).
+   histórico y los datos del Pi. Un modelo solo se reemplaza si, en el mismo test,
+   le gana a la persistencia y al actual ([Modelos](modelos.md#14-en-produccion)).
 
 ## 5. Plan B: el Pi no tiene internet en el laboratorio
 
-`eth0` está en el puerto espejo, que solo escucha, así que la subida a la nube
-va por WiFi. El Pi ya guarda la red del hotspot del celular (`pi/bin/nids-wifi.sh`).
+Hoy el Pi usa `eth0` en un puerto normal para capturar y subir. Si se instala en
+un espejo, que solo escucha, la subida iría por otra salida (`pi/bin/nids-wifi.sh`
+guarda redes WiFi; el perfil se configura antes de usarlo).
 
-1. **Primero:** encender el hotspot del celular con el mismo nombre y la misma
-   clave. En 1 minuto el panel "Segundos desde el último archivo" vuelve a verde.
+1. **Primero:** revisar el cable y el panel "Segundos desde el último archivo".
 2. **Si aun así no conecta:** encender el reproductor del histórico en la VM:
    ```bash
    docker compose --profile respaldo up -d reproductor
@@ -101,6 +103,5 @@ va por WiFi. El Pi ya guarda la red del hotspot del celular (`pi/bin/nids-wifi.s
 
 - [ ] Grafana abre (http://&lt;IP_VM&gt;:3000) y el panel "Segundos desde el último archivo" está en verde.
 - [ ] `docker compose ps`: todo `Up` (kafka-topicos aparece como `Exited (0)`, es normal).
-- [ ] Hotspot del celular encendido si el Pi no tiene otra salida a internet.
 - [ ] Túnel SSH listo para Kafka UI si lo piden.
 - [ ] Cada integrante abrió su notebook y su página.

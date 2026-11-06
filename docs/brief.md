@@ -132,8 +132,8 @@ el **incidente automático**.
   predicción + 3·RMSE, antes de que los usuarios noten la saturación.
 - **Fuente streaming:** `trafico-flujos` → Spark (ventana fija de 1 min, watermark de 4 min).
 - **Modelo:** GBT en escala log con rezagos (lag 1-3 y media de 5 min),
-  elegido por validación cruzada temporal. En test (último 20 %): **+16,2 % de
-  RMSE y −43 % de MAE frente a la persistencia**.
+  elegido por validación cruzada temporal. En test del histórico: **+31,6 % de
+  RMSE y −48 % de MAE frente a la persistencia**; en datos del Pi, +21,2 % de RMSE.
 - **Salida:** Grafana, fila "Dimensión 1".
 - **Requisitos:**
     1. El sistema debe predecir los bytes del minuto siguiente con cada ventana cerrada.
@@ -172,8 +172,8 @@ el **incidente automático**.
 - **Decisión que habilita:** abrir un incidente automático y cruzarlo con SYN y
   con el K-Means para confirmarlo.
 - **Fuente streaming:** `trafico-flujos` → Spark.
-- **Modelo:** Random Forest con rezagos. En test: **+45,8 % de RMSE frente a la
-  persistencia, R² 0,63**; es el indicador más predecible del proyecto.
+- **Modelo:** regresión lineal con rezagos, entrenada con datos del Pi. En test
+  (Pi): **+14,7 % de RMSE frente a la persistencia, R² 0,66**.
 - **Salida:** Grafana, fila "Dimensión 2", y las filas de observabilidad del pipeline.
 - **Requisitos:**
     1. El sistema debe predecir los flujos del minuto siguiente con cada ventana cerrada.
@@ -211,8 +211,8 @@ el **incidente automático**.
 - **Decisión que habilita:** abrir un incidente automático de severidad
   **alta**, categoría `escaneo_red`.
 - **Fuente streaming:** `trafico-flujos` → Spark.
-- **Modelo:** GBT en escala log. Aquí la persistencia es fuerte (R² 0,79): LR y
-  RF le pierden y **solo el GBT la supera, +11,6 %**.
+- **Modelo:** regresión lineal con rezagos, entrenada con el histórico y datos
+  del Pi. En test (Pi): **+24,1 % de RMSE frente a la persistencia**.
 - **Salida:** Grafana, fila "Dimensión 3".
 - **Requisitos:**
     1. El sistema debe predecir los SYN del minuto siguiente.
@@ -251,8 +251,8 @@ el **incidente automático**.
   la tabla de flujos sospechosos.
 - **Fuente streaming:** `trafico-flujos` → Spark. Jhan además publica y
   consume en vivo el **evento empresarial** (`incidentes-seguridad`, contrato v1.1).
-- **Modelo:** Random Forest en escala log. En test: **+17,6 % de RMSE frente a
-  la persistencia**.
+- **Modelo:** regresión lineal con rezagos, entrenada con el histórico y datos
+  del Pi. En test (Pi): **+23,9 % de RMSE frente a la persistencia**.
 - **Salida:** Grafana, filas "Dimensión 4" y "Evento empresarial".
 - **Requisitos:**
     1. El sistema debe predecir los flujos DNS del minuto siguiente.

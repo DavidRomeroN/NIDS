@@ -9,21 +9,21 @@
 | Pregunta | ¿Quién consulta DNS, cuánto y con qué tamaño de pregunta? | ¿Hay una ráfaga de DNS anómala (beaconing, túnel DNS)? |
 | Indicador | flujos DNS por hora y por host, tamaño de pregunta (p99) | flujos DNS por minuto |
 | Instrumento | Silver (TRCU.csv) | Kafka `trafico-flujos` → Spark |
-| Predicción | DNS de la próxima hora | DNS del minuto siguiente (RandomForest log) |
+| Predicción | DNS de la próxima hora | DNS del minuto siguiente (regresión lineal) |
 | Dónde se ve | [Notebook 04](../notebooks/04_jhan_consultas_dns.ipynb) | Grafana, fila "Dimensión 4 (Jhan Ramos)" |
 
-## Resultado del modelo en vivo (test)
+## Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
 
 | Modelo | RMSE | MAE | R² |
 |---|---:|---:|---:|
-| Persistencia | 0,734 | 0,170 | −0,23 |
-| LinearRegression (log) | 0,595 | 0,148 | 0,19 |
-| **RandomForest (log, profundidad 6) — ganador por validación** | **0,604** | **0,144** | **0,17** |
-| GBT (log) | 0,593 | 0,143 | 0,20 |
+| Persistencia | 2,92 | 1,16 | −0,16 |
+| **LinearRegression, histórico + Pi — ganador** | **2,22** | **0,96** | **0,33** |
+| RandomForest | 2,27 | 0,93 | 0,30 |
+| GBT | 2,46 | 0,92 | 0,18 |
 
-**+17,6 % de RMSE frente a la persistencia.** La validación eligió RF; en test
-GBT quedó apenas mejor. No se cambia el ganador mirando el test: eso sería
-contaminar la evaluación.
+**+23,9 % de RMSE frente a la persistencia.** El +17,6 % del PPT se midió solo con el
+histórico, así que las dos cifras no se comparan. La validación eligió el modelo:
+no se cambia el ganador mirando el test.
 
 ## El evento empresarial: `incidentes-seguridad` (mi rol)
 

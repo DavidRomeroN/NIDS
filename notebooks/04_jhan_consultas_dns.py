@@ -99,5 +99,5 @@ print("\nVariables más importantes:", m["importancia_variables"])
 #   que la mesa de TI debería revisar.
 # - **p99 del tamaño de pregunta: 936 bytes**; por encima, revisar.
 # - **U1 (por hora):** el Random Forest mejora 14,5 % frente a la persistencia.
-# - **U2 (por minuto):** RF en escala log, +17,6 %. En Grafana (fila
+# - **U2 (por minuto):** regresión lineal (histórico + Pi), +23,9 %. En Grafana (fila
 #   "Dimensión 4") se ve el DNS real, su predicción, la persistencia y el umbral.

@@ -9,19 +9,20 @@
 | Pregunta | ¿Cuántas conexiones se abren, hacia qué servicios y cuánto duran? | ¿Se está disparando la cantidad de conexiones ahora? |
 | Indicador | flujos por hora, top puertos/servicios, duración (p50/p90/p99) | flujos nuevos por minuto |
 | Instrumento | Silver/Gold (TRCU.csv) | Kafka `trafico-flujos` → Spark |
-| Predicción | flujos de la próxima hora | flujos del minuto siguiente (RandomForest) |
+| Predicción | flujos de la próxima hora | flujos del minuto siguiente (regresión lineal) |
 | Dónde se ve | [Notebook 02](../notebooks/02_nick_conexiones.ipynb) | Grafana, fila "Dimensión 2 (Nick Mayta)" |
 
-## Resultado del modelo en vivo (test)
+## Resultado del modelo en vivo (test con datos del Pi, 6-nov-2026)
 
 | Modelo | RMSE | MAE | R² |
 |---|---:|---:|---:|
-| Persistencia | 10,32 | 6,76 | −0,24 |
-| LinearRegression | 6,67 | 3,61 | 0,48 |
-| **RandomForest (profundidad 10) — ganador** | **5,60** | **2,93** | **0,63** |
-| GBT | 6,29 | 3,39 | 0,54 |
+| Persistencia | 14,15 | 8,80 | 0,53 |
+| **LinearRegression, solo Pi — ganador** | **12,07** | **7,58** | **0,66** |
+| RandomForest | 12,30 | 7,78 | 0,64 |
+| GBT | 12,67 | 7,79 | 0,62 |
 
-**+45,8 % de RMSE frente a la persistencia**: el indicador más predecible del proyecto.
+**+14,7 % de RMSE frente a la persistencia.** El +45,8 % del PPT se midió solo con el
+histórico; con datos del Pi, ese modelo quedaba 30,5 % peor que la persistencia.
 
 ## Arquitectura y observabilidad (mi rol)
 

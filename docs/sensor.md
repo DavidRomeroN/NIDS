@@ -6,6 +6,11 @@ El Pi es un **sensor pasivo**: escucha una copia del tráfico en el puerto espej
 del switch y no puede bloquear ni modificar nada. Es el único equipo del
 proyecto que está físicamente en el campus.
 
+**Estado actual:** este documento describe el diseño con puerto espejo. Hoy el Pi
+está en un **puerto normal** de la sala docentes: ve anuncios de la red, su propio
+tráfico y fragmentos del de otras PC. El 99,8 % de los flujos revisados el 6-nov-2026
+se vio en una sola dirección.
+
 ## 2. Hardware
 
 | Equipo | Especificación | Rol |
