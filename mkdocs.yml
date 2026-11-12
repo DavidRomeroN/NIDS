@@ -48,6 +48,7 @@ nav:
   - Brief del proyecto: brief.md
   - Inicio: index.md
   - Arquitectura: arquitectura.md
+  - Mapa Interactivo: assets/floorplan.html
   - Componentes:
       - Sensor Raspberry Pi: sensor.md
       - Ingesta y contratos (Kafka): ingesta.md
