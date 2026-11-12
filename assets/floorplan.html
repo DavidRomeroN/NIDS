@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa del NIDS</title>
+<meta name="description" content="Mapa interactivo de la arquitectura del NIDS: sensor Raspberry Pi, VM de Azure, Kafka, Spark, Data Lake, modelos y Grafana, con la ruta y la línea de código de cada componente.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1f24; --muted:#5b6470; --line:#d5dae1;
+  --edge:#9aa3ae; --edge-on:#1b1f24;
+  --pi:#c2410c; --pi-bg:#fff4ec;
+  --vm:#1d4ed8; --vm-bg:#eef3ff;
+  --dev:#475569; --dev-bg:#f1f5f9;
+  --kafka:#0f766e; --spark:#b45309; --store:#4b5563; --batch:#2563eb; --obs:#15803d;
+  --ml:#7c3aed; --ml-bg:#f3edff; --hard:#be123c;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111418; --panel:#1a1e24; --ink:#e7eaee; --muted:#9aa4b1; --line:#2c323a;
+    --edge:#4d5561; --edge-on:#e7eaee;
+    --pi:#fb923c; --pi-bg:#2a1d14; --vm:#7ea6ff; --vm-bg:#161d2c; --dev:#94a3b8; --dev-bg:#1a2029;
+    --kafka:#2dd4bf; --spark:#fbbf24; --store:#a3acb8; --batch:#7ea6ff; --obs:#4ade80;
+    --ml:#b794ff; --ml-bg:#241b36; --hard:#fb7185; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111418; --panel:#1a1e24; --ink:#e7eaee; --muted:#9aa4b1; --line:#2c323a;
+  --edge:#4d5561; --edge-on:#e7eaee;
+  --pi:#fb923c; --pi-bg:#2a1d14; --vm:#7ea6ff; --vm-bg:#161d2c; --dev:#94a3b8; --dev-bg:#1a2029;
+  --kafka:#2dd4bf; --spark:#fbbf24; --store:#a3acb8; --batch:#7ea6ff; --obs:#4ade80;
+  --ml:#b794ff; --ml-bg:#241b36; --hard:#fb7185; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+header{padding:14px 16px 10px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:30}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 10px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bar .lbl{color:var(--muted);font-size:12px;margin-right:2px}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:var(--edge)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+#tourbar{display:none;gap:8px;align-items:center;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#tourbar.on{display:flex;flex-wrap:wrap}
+#tourtxt{flex:1 1 320px;font-size:13px}
+#tourtxt b{font-weight:600}
+#scroller{overflow:auto;height:calc(100vh - 118px)}
+#canvas{position:relative;min-width:1720px;padding:16px 16px 40px}
+svg#edges{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+#labels{position:absolute;inset:0;z-index:5;pointer-events:none}
+.elabel{position:absolute;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;color:var(--ink);white-space:nowrap;display:none}
+.elabel.on{display:block}
+.zone{position:relative;border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px 12px}
+.zone>.zt{font-weight:600;font-size:13px;margin:0 0 8px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.zone>.zt small{font-weight:400;color:var(--muted)}
+.z-dev{border-color:var(--dev);background:var(--dev-bg)}
+.z-pi{border-color:var(--pi);background:var(--pi-bg)}
+.z-vm{border-color:var(--vm);background:var(--vm-bg)}
+.z-dev>.zt{color:var(--dev)} .z-pi>.zt{color:var(--pi)} .z-vm>.zt{color:var(--vm)}
+#top{display:flex;gap:16px;margin-bottom:18px}
+#top .z-dev{flex:1}
+.devrow{display:flex;gap:28px}
+#main{display:flex;gap:18px;align-items:stretch}
+#main .z-pi{width:230px;flex:none}
+#main .z-vm{flex:1}
+.cols{display:flex;gap:26px;align-items:flex-start}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.col>h3{margin:0 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.col>h3 span{display:block;text-transform:none;letter-spacing:0;font-weight:400;font-size:11px}
+.node{position:relative;z-index:3;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c,var(--edge));border-radius:8px;padding:7px 9px 8px;box-shadow:var(--shadow);cursor:pointer;transition:opacity .15s,box-shadow .15s,transform .15s;min-height:44px}
+.devrow .node{width:250px}
+.node:hover{transform:translateY(-1px)}
+.node .t{font-weight:600;font-size:13px;line-height:1.25;padding-right:34px}
+.node .p{font:11px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);margin-top:2px;word-break:break-all}
+.node .badges{position:absolute;top:6px;right:6px;display:flex;gap:3px}
+.bd{font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;line-height:16px;color:#fff}
+.bd.ml{background:var(--ml)} .bd.hd{background:var(--hard)}
+.node.ml{background:var(--ml-bg);border-color:var(--ml);border-left-color:var(--ml)}
+.node.sel{box-shadow:0 0 0 2px var(--ink)}
+.node.dim{opacity:.22}
+.node.tourcur{box-shadow:0 0 0 3px var(--ml)}
+.k-pi{--c:var(--pi)} .k-dev{--c:var(--dev)} .k-vm{--c:var(--vm)} .k-kafka{--c:var(--kafka)} .k-spark{--c:var(--spark)}
+.k-store{--c:var(--store)} .k-batch{--c:var(--batch)} .k-obs{--c:var(--obs)}
+path.e{fill:none;stroke:var(--edge);stroke-width:1.3;opacity:.55}
+path.e.on{stroke:var(--edge-on);stroke-width:2.2;opacity:1}
+path.e.ml.on{stroke:var(--ml)}
+path.e.dim{opacity:.08}
+#panel{position:fixed;top:0;right:0;width:400px;max-width:100%;height:100%;background:var(--panel);border-left:1px solid var(--line);box-shadow:-6px 0 20px rgba(0,0,0,.12);z-index:40;transform:translateX(105%);transition:transform .2s;display:flex;flex-direction:column}
+#panel.open{transform:none}
+#panel .hd{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+#panel .hd h2{font-size:16px;margin:0 30px 2px 0}
+#panel .hd .p{font:12px ui-monospace,Consolas,monospace;color:var(--muted);word-break:break-all}
+#panel .close{position:absolute;top:10px;right:10px;padding:2px 8px}
+#panel .bd2{padding:12px 16px 24px;overflow:auto}
+#panel .desc{margin:0 0 12px}
+#panel .tags{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 12px}
+.tag{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 8px;color:var(--muted)}
+.tag.ml{border-color:var(--ml);color:var(--ml)} .tag.hard{border-color:var(--hard);color:var(--hard)}
+table.lines{width:100%;border-collapse:collapse;font-size:12.5px}
+table.lines td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top}
+table.lines td.f{font:11.5px ui-monospace,Consolas,monospace;white-space:nowrap;color:var(--muted)}
+table.lines td.f b{color:var(--ink);font-weight:600}
+#panel h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:16px 0 6px}
+.conn{display:flex;flex-direction:column;gap:4px}
+.conn button{text-align:left;font-size:12.5px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+@media (max-width:700px){
+  header{position:static}
+  #scroller{height:auto}
+  #panel{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Mapa del NIDS</h1>
+  <p class="sub">Del Raspberry Pi en la sala docentes a Grafana en la VM de Azure. Haz clic en un componente para ver su archivo, sus líneas de código y con qué se conecta.</p>
+  <div class="bar" role="toolbar" aria-label="Filtros">
+    <span class="lbl">Resaltar:</span>
+    <button data-f="all" aria-pressed="true">Todo</button>
+    <button data-f="batch" aria-pressed="false">Batch (U1)</button>
+    <button data-f="stream" aria-pressed="false">Streaming (U2)</button>
+    <button data-f="ml" aria-pressed="false">Inferencia ML</button>
+    <button data-f="hard" aria-pressed="false">Hardening</button>
+    <span class="sep"></span>
+    <span class="lbl">Recorrido:</span>
+    <button data-t="trafico">Tráfico → Grafana</button>
+    <button data-t="telemetria">Telemetría del Pi</button>
+    <button data-t="entreno">Entrenamiento → inferencia</button>
+    <span class="sep"></span>
+    <button id="btnLabels" aria-pressed="false">Etiquetas de flechas</button>
+    <button id="btnTheme" title="Cambiar tema">◐</button>
+  </div>
+  <div id="tourbar" aria-live="polite">
+    <button id="tPrev">← Anterior</button>
+    <div id="tourtxt"></div>
+    <button id="tNext">Siguiente →</button>
+    <button id="tEnd">Salir</button>
+  </div>
+  <div class="legend">
+    <span><i style="background:var(--pi)"></i>Raspberry Pi</span>
+    <span><i style="background:var(--kafka)"></i>Kafka</span>
+    <span><i style="background:var(--spark)"></i>Spark Streaming</span>
+    <span><i style="background:var(--store)"></i>Almacenamiento /data</span>
+    <span><i style="background:var(--batch)"></i>Batch y entrenamiento</span>
+    <span><i style="background:var(--obs)"></i>Observabilidad</span>
+    <span><i style="background:var(--ml)"></i>ML = punto de inferencia</span>
+    <span><i style="background:var(--hard)"></i>HD = hardening</span>
+  </div>
+</header>
+
+<div id="scroller">
+  <div id="canvas">
+    <svg id="edges" aria-hidden="true">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/></marker>
+        <marker id="ar-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--edge-on)"/></marker>
+        <marker id="ar-ml" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ml)"/></marker>
+      </defs>
+    </svg>
+    <div id="labels"></div>
+
+    <div id="top">
+      <section class="zone z-dev" aria-label="Desarrollo">
+        <div class="zt">GitHub y laptop <small>Desarrollo y documentación. No procesan datos del sensor.</small></div>
+        <div class="devrow" data-col="dev"></div>
+      </section>
+    </div>
+
+    <div id="main">
+      <section class="zone z-pi" aria-label="Raspberry Pi">
+        <div class="zt">Raspberry Pi 5 <small>sensor nids-pi-01 · sala docentes</small></div>
+        <div class="col" data-col="pi"></div>
+      </section>
+
+      <section class="zone z-vm" aria-label="VM de Azure">
+        <div class="zt">VM de Azure · nids-vm · 40.116.67.213 <small>Ubuntu, North Central US · servicios en Docker (nube/compose.yml)</small></div>
+        <div class="cols">
+          <div class="col" data-col="in"><h3>Entrada<span>SSH, carpetas y productores</span></h3></div>
+          <div class="col" data-col="kafka"><h3>Kafka (KRaft)<span>compose.yml 10-47 · 3 particiones por tópico</span></h3></div>
+          <div class="col" data-col="spark"><h3>Spark Structured Streaming<span>streaming_nids.py · trigger 20 s · 5 consultas</span></h3></div>
+          <div class="col" data-col="store"><h3>Almacenamiento /data<span>volumen nids-nube_spark_data</span></h3></div>
+          <div class="col" data-col="batch"><h3>Batch y entrenamiento<span>capa batch (U1)</span></h3></div>
+          <div class="col" data-col="obs"><h3>Observabilidad<span>Pushgateway → Prometheus → Grafana</span></h3></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<aside id="panel" aria-label="Detalle del componente">
+  <button class="close" id="pClose" aria-label="Cerrar">✕</button>
+  <div class="hd"><h2 id="pTitle"></h2><div class="p" id="pPath"></div></div>
+  <div class="bd2">
+    <div class="tags" id="pTags"></div>
+    <p class="desc" id="pDesc"></p>
+    <h4>Dónde está en el código</h4>
+    <table class="lines"><tbody id="pLines"></tbody></table>
+    <h4>Conexiones</h4>
+    <div class="conn" id="pConn"></div>
+  </div>
+</aside>
+
+<script>
+// Cada componente: columna, tipo, etiquetas de filtro y líneas reales del repositorio NIDS.
+const N = [
+  // ---------- Desarrollo ----------
+  {id:"laptop", col:"dev", k:"dev", t:"Laptop (edición)", p:"repositorio local NIDS + VS Code",
+   tags:["batch","stream"], d:"Aquí se edita el código y la documentación. No recibe datos del sensor: entra a la VM por SSH (VS Code Remote-SSH) para desplegar y sube los cambios a GitHub con git push.",
+   L:[["~/.ssh/config","—","Host nids-vm: la laptop entra a la VM como azureuser con su llave"]]},
+  {id:"github", col:"dev", k:"dev", t:"GitHub · DavidRomeroN/NIDS", p:"github.com/DavidRomeroN/NIDS",
+   tags:["batch","stream"], d:"Repositorio fuente: nube/ (servicios de la VM), pi/ (scripts del sensor), notebooks/ y docs/ (MkDocs).",
+   L:[["nube/","—","Todo lo que corre en la VM"],["pi/","—","Instalador, scripts y servicios del Raspberry Pi"],["notebooks/","—","Notebooks 00-04 (batch, U1)"]]},
+  {id:"pages", col:"dev", k:"dev", t:"GitHub Pages (MkDocs)", p:".github/workflows/docs.yml",
+   tags:["batch","stream"], d:"Cada push a main publica la documentación con mkdocs gh-deploy en davidromeron.github.io/NIDS.",
+   L:[[".github/workflows/docs.yml","3-6","Se dispara con cada push a main"],[".github/workflows/docs.yml","32","mkdocs gh-deploy --force"]]},
+
+  // ---------- Raspberry Pi ----------
+  {id:"conf", col:"pi", k:"pi", t:"Configuración del sensor", p:"/etc/nids/nids.conf",
+   tags:["stream","hard"], hard:true, d:"Dice a dónde conectarse: VM_HOST=40.116.67.213, VM_PUERTO=22, VM_USUARIO=nids-sensor y la llave CLAVE_SSH=/etc/nids/id_ed25519. Solo existe dentro del Pi; el repo tiene la plantilla.",
+   L:[["pi/nids.conf.example","23-26","VM_HOST, VM_PUERTO, VM_USUARIO, CLAVE_SSH"],["pi/instalar.sh","31-35","Copia la plantilla al Pi y rellena los valores"],["pi/instalar.sh","43","Crea la llave SSH propia del Pi"]]},
+  {id:"captura", col:"pi", k:"pi", t:"nids-captura.service", p:"/opt/nids/bin/nids-captura.sh",
+   tags:["stream"], d:"Captura el tráfico de la red con tcpdump y lo corta en archivos PCAP cortos, rotados por tiempo.",
+   L:[["pi/bin/nids-captura.sh","11-14","tcpdump -i … -G … -w <sensor>_<fecha>.pcap"],["pi/systemd/nids-captura.service","7-8","ExecStart del script · Restart=always"]]},
+  {id:"subida", col:"pi", k:"pi", t:"nids-subida.service", p:"/opt/nids/bin/nids-subida.sh",
+   tags:["stream"], d:"Recorta cada PCAP terminado a solo cabeceras, lo comprime y lo sube por SFTP a la VM. Lo sube como .tmp y lo renombra al final para que el ingestor nunca lea un archivo a medias.",
+   L:[["pi/bin/nids-subida.sh","6","source /etc/nids/nids.conf"],["pi/bin/nids-subida.sh","8-9","Opciones SSH: llave y puerto"],["pi/bin/nids-subida.sh","16-17","editcap (recorta) + gzip"],["pi/bin/nids-subida.sh","19-21","sftp nids-sensor@VM: put .tmp y rename en incoming/"]]},
+  {id:"telemetria", col:"pi", k:"pi", t:"nids-telemetria.service", p:"/opt/nids/bin/nids-telemetria.py",
+   tags:["stream"], d:"Cada 5 s mide la salud del Pi (temperatura, CPU, RAM, disco) y la publica por MQTT en 127.0.0.1:1883, que es la entrada del túnel SSH.",
+   L:[["pi/bin/nids-telemetria.py","31-32","Tópico nids/<sensor>/telemetria · cada 5 s"],["pi/bin/nids-telemetria.py","114","connect('127.0.0.1', 1883)"],["pi/bin/nids-telemetria.py","124","publish(…, qos=1)"]]},
+  {id:"tunel", col:"pi", k:"pi", t:"nids-tunel.service", p:"autossh -L 127.0.0.1:1883",
+   tags:["stream","hard"], hard:true, d:"Mantiene abierto un túnel SSH local (-L, no inverso): lo que entra al puerto 1883 del Pi sale en el Mosquitto de la VM. autossh lo reconecta si se cae.",
+   L:[["pi/systemd/nids-tunel.service","7","EnvironmentFile=/etc/nids/nids.conf"],["pi/systemd/nids-tunel.service","9","autossh -M 0 -N"],["pi/systemd/nids-tunel.service","13","-L 127.0.0.1:1883:127.0.0.1:1883"],["pi/systemd/nids-tunel.service","15","Restart=always"]]},
+
+  // ---------- VM: entrada ----------
+  {id:"sshd", col:"in", k:"vm", t:"SSH de la VM · usuario nids-sensor", p:"nube/desplegar.sh",
+   tags:["stream","hard"], hard:true, d:"La única puerta de entrada del Pi (puertos 22 y 443). El usuario nids-sensor no tiene shell: solo puede usar SFTP en /srv/nids y abrir un túnel hacia 127.0.0.1:1883.",
+   L:[["nube/desplegar.sh","41","SSH en los puertos 22 y 443"],["nube/desplegar.sh","51","useradd nids-sensor sin shell (nologin)"],["nube/desplegar.sh","58","restrict,port-forwarding,permitopen=\"127.0.0.1:1883\""],["nube/desplegar.sh","67-70","Match User: ForceCommand internal-sftp, PermitTTY no"]]},
+  {id:"incoming", col:"in", k:"vm", t:"Bandeja de PCAP", p:"/srv/nids/incoming",
+   tags:["stream"], d:"Carpeta del disco de la VM donde llegan los PCAP. Casi siempre está vacía: el ingestor procesa cada archivo en segundos y lo mueve a /srv/nids/procesados.",
+   L:[["nube/compose.yml","111","Volumen /srv/nids:/srv/nids del ingestor"],["nube/app/ingestor_pcap.py","25-27","DIR_ENTRADA, DIR_PROCESADOS, 3 días de retención"]]},
+  {id:"mosquitto", col:"in", k:"vm", t:"Mosquitto (MQTT)", p:"127.0.0.1:1883",
+   tags:["stream"], d:"Broker MQTT. Solo escucha dentro de la VM; el Pi llega a él únicamente por el túnel SSH.",
+   L:[["nube/compose.yml","73","Servicio mosquitto"],["nube/compose.yml","78","Puerto 127.0.0.1:1883 (no expuesto a internet)"]]},
+  {id:"ingestor", col:"in", k:"vm", t:"Ingestor", p:"nube/app/ingestor_pcap.py",
+   tags:["stream","hard"], hard:true, d:"Lee los PCAP, arma los flujos (conversaciones por 5-tupla, ida y vuelta), cambia las IP por seudónimos HMAC (Ley 29733) y publica un mensaje por flujo en Kafka.",
+   L:[["nube/app/ingestor_pcap.py","268","Busca *.pcap.gz en incoming cada 2 s"],["nube/app/ingestor_pcap.py","87-114","leer_paquete: solo cabeceras IP/TCP/UDP"],["nube/app/ingestor_pcap.py","117-151","TablaFlujos: agrupa y cierra flujos (FIN/RST, 30 s, 2 min)"],["nube/app/ingestor_pcap.py","68-75","Seudónimo HMAC-SHA256 de cada IP"],["nube/app/ingestor_pcap.py","188","producer.send('trafico-flujos')"],["nube/app/ingestor_pcap.py","245","Mueve el PCAP a procesados"]]},
+  {id:"puente", col:"in", k:"vm", t:"Puente MQTT → Kafka", p:"nube/app/bridge_mqtt_kafka.py",
+   tags:["stream"], d:"Se suscribe a la telemetría que llega a Mosquitto y la reenvía a Kafka, al tópico pi-telemetria.",
+   L:[["nube/app/bridge_mqtt_kafka.py","13-18","Configuración MQTT y Kafka"],["nube/app/bridge_mqtt_kafka.py","44","subscribe('nids/+/telemetria')"],["nube/app/bridge_mqtt_kafka.py","54","producer.send('pi-telemetria')"],["nube/app/bridge_mqtt_kafka.py","72","connect(mosquitto, 1883)"]]},
+  {id:"productor", col:"in", k:"vm", t:"Productor de incidentes", p:"nube/app/productor_incidentes.py",
+   tags:["stream"], d:"Evento empresarial: simula la mesa de TI abriendo y cerrando incidentes, y los publica en incidentes-seguridad.",
+   L:[["nube/compose.yml","115-122","Servicio incidentes → KAFKA_TOPIC incidentes-seguridad"]]},
+
+  // ---------- Kafka ----------
+  {id:"k_flujos", col:"kafka", k:"kafka", t:"trafico-flujos", p:"tópico Kafka",
+   tags:["stream"], d:"Un mensaje por flujo de red: sensor, IP seudonimizadas, puertos, paquetes y bytes de ida y vuelta. La clave es la IP origen seudonimizada.",
+   L:[["nube/compose.yml","34-47","kafka-topicos: crea los tópicos con 3 particiones"],["nube/app/ingestor_pcap.py","163-182","Forma del mensaje (a_evento)"]]},
+  {id:"k_tele", col:"kafka", k:"kafka", t:"pi-telemetria", p:"tópico Kafka",
+   tags:["stream"], d:"Salud del sensor cada 5 s: temperatura, CPU, RAM, disco, PCAP pendientes.",
+   L:[["nube/compose.yml","34-47","kafka-topicos"],["nube/app/bridge_mqtt_kafka.py","18","KAFKA_TOPIC = pi-telemetria"]]},
+  {id:"k_inc", col:"kafka", k:"kafka", t:"incidentes-seguridad", p:"tópico Kafka",
+   tags:["stream"], d:"Eventos de la mesa de TI y los incidentes automáticos que abre Spark cuando su modelo detecta una anomalía.",
+   L:[["nube/compose.yml","34-47","kafka-topicos"],["nube/spark/jobs/streaming_nids.py","355-359","Spark escribe aquí los incidentes automáticos"]]},
+
+  // ---------- Spark Streaming ----------
+  {id:"q_trafico", col:"spark", k:"spark", t:"trafico_ventanas_1min", p:"streaming_nids.py · consulta 1",
+   tags:["stream"], d:"Lee trafico-flujos, valida y agrupa en ventanas de 1 minuto por sensor: suma bytes, flujos, SYN, DNS… con agregar_por_minuto, la misma función que usa el batch. Watermark 4 min.",
+   L:[["nube/spark/jobs/streaming_nids.py","35-43","readStream de Kafka"],["nube/spark/jobs/streaming_nids.py","70-96","from_json, validación y columnas"],["nube/spark/jobs/streaming_nids.py","99","withWatermark('4 minutes') + agregar_por_minuto"],["nube/spark/jobs/comun.py","108-139","agregar_por_minuto (bytes = ida + vuelta)"],["nube/spark/jobs/streaming_nids.py","159","Escribe Parquet trafico_minuto"],["nube/spark/jobs/streaming_nids.py","596","iniciar(…)"]]},
+  {id:"recarga", col:"spark", k:"spark", ml:true, t:"Recarga en caliente del modelo", p:"Modelos.refrescar()",
+   tags:["ml","stream"], d:"En cada micro-lote revisa metricas.json; si el entrenador publicó un modelo nuevo, lo carga sin reiniciar Spark.",
+   L:[["nube/spark/jobs/streaming_nids.py","110-122","refrescar(): compara la fecha de metricas.json y carga el PipelineModel"]]},
+  {id:"inferencia", col:"spark", k:"spark", ml:true, t:"Inferencia en tiempo real", p:"modelo.transform()",
+   tags:["ml","stream"], d:"Con los minutos anteriores (rezagos) cada modelo predice el valor del minuto: bytes, flujos, SYN y DNS.",
+   L:[["nube/spark/jobs/streaming_nids.py","165-176","Arma los rezagos de cada minuto y la tabla de entrada del modelo"],["nube/spark/jobs/streaming_nids.py","177-178","for indicador, modelo … modelo.transform(entrada)"],["nube/spark/jobs/streaming_nids.py","179-181","Si el modelo aprendió en log, vuelve a la escala real"]]},
+  {id:"umbral", col:"spark", k:"spark", ml:true, t:"Umbral y alerta", p:"predicción + 3·RMSE",
+   tags:["ml","stream"], d:"Si el valor real supera la predicción más 3 veces el RMSE del modelo, es anomalía: se abre un incidente (máximo uno cada 10 min por motivo) y se envían las métricas a Grafana.",
+   L:[["nube/spark/jobs/streaming_nids.py","201-206","umbral = 3 · RMSE · anomalía si real − predicción > umbral"],["nube/spark/jobs/streaming_nids.py","338-360","abrir_incidente → Kafka incidentes-seguridad"],["nube/spark/jobs/streaming_nids.py","243","push('nids_trafico')"]]},
+  {id:"q_flujos", col:"spark", k:"spark", ml:true, t:"flujos_anomalias", p:"streaming_nids.py · consulta 2",
+   tags:["stream","ml"], d:"Puntúa cada flujo con el modelo K-Means (distancia a su centro). Si el puntaje supera el umbral, el flujo es anómalo.",
+   L:[["nube/spark/jobs/streaming_nids.py","280-297","procesar_flujos y Parquet anomalias_flujo"],["nube/spark/jobs/streaming_nids.py","317","push('nids_flujos')"],["nube/spark/jobs/streaming_nids.py","597","iniciar(…)"]]},
+  {id:"q_tele", col:"spark", k:"spark", t:"telemetria_ventanas_1min", p:"streaming_nids.py · consulta 3",
+   tags:["stream"], d:"Ventanas de 1 minuto de la salud del Pi, con validación del rango físico de temperatura. Watermark 1 min.",
+   L:[["nube/spark/jobs/streaming_nids.py","384-390","Lee pi-telemetria y valida"],["nube/spark/jobs/streaming_nids.py","392-394","Ventana de 1 min · watermark 1 min"],["nube/spark/jobs/streaming_nids.py","418","Parquet pi_telemetria_minuto"],["nube/spark/jobs/streaming_nids.py","430","push('nids_pi')"]]},
+  {id:"q_inc", col:"spark", k:"spark", t:"incidentes_eventos", p:"streaming_nids.py · consulta 4",
+   tags:["stream"], d:"Lee cada incidente abierto o cerrado, lo guarda y calcula KPIs (abiertos, tiempo de resolución).",
+   L:[["nube/spark/jobs/streaming_nids.py","450-456","Lee incidentes-seguridad y valida el contrato"],["nube/spark/jobs/streaming_nids.py","469","Parquet incidentes"],["nube/spark/jobs/streaming_nids.py","497","push('nids_incidentes')"]]},
+  {id:"q_inc5", col:"spark", k:"spark", t:"incidentes_deslizante_5min", p:"streaming_nids.py · consulta 5",
+   tags:["stream"], d:"Ventana deslizante: incidentes abiertos en los últimos 5 minutos, recalculada cada minuto. Watermark 2 min.",
+   L:[["nube/spark/jobs/streaming_nids.py","503-510","window(5 min, 1 min) · watermark 2 min"],["nube/spark/jobs/streaming_nids.py","519","push('nids_incidentes_ventana')"]]},
+
+  // ---------- Almacenamiento ----------
+  {id:"trcu", col:"store", k:"store", t:"Histórico TRCU", p:"/data/historico/TRCU.csv",
+   tags:["batch"], d:"Histórico de flujos de red de la universidad (NTLFlowLyzer). Es la base de la capa batch y del primer entrenamiento.",
+   L:[["nube/spark/jobs/preparar_historico.py","8-11","Origen del histórico y cómo se procesa"]]},
+  {id:"lake", col:"store", k:"store", t:"Data Lake (Parquet)", p:"/data/lake",
+   tags:["batch","stream"], d:"Parquet particionado por fecha. Streaming escribe trafico_minuto, anomalias_flujo, pi_telemetria_minuto e incidentes. Batch escribe historico_flujos e historico_minuto.",
+   L:[["nube/spark/jobs/comun.py","10","LAKE_DIR = /data/lake"],["nube/spark/jobs/streaming_nids.py","159","trafico_minuto (partitionBy fecha)"],["nube/spark/jobs/preparar_historico.py","54-57","historico_flujos e historico_minuto"]]},
+  {id:"modelos", col:"store", k:"store", ml:true, t:"Modelos publicados", p:"/data/modelos/<indicador>/",
+   tags:["ml","batch"], d:"Un modelo por indicador (bytes, flujos, syn, dns) y el K-Means de flujos. Cada uno con su carpeta modelo/ y su metricas.json.",
+   L:[["nube/spark/jobs/comun.py","12","MODELOS_DIR = /data/modelos"],["nube/spark/jobs/entrenar_series.py","234","Guarda el modelo ganador"],["nube/spark/jobs/entrenar_series.py","259","metricas.json se escribe al final, de forma atómica"]]},
+  {id:"checkpoints", col:"store", k:"store", t:"Checkpoints de Spark", p:"/data/checkpoints/<consulta>",
+   tags:["stream","hard"], hard:true, d:"Spark anota aquí hasta qué offset de Kafka leyó cada consulta. Si se reinicia, sigue desde ahí sin perder ni repetir datos.",
+   L:[["nube/spark/jobs/comun.py","11","CHECKPOINT_DIR = /data/checkpoints"],["nube/spark/jobs/streaming_nids.py","533","checkpointLocation por consulta"],["nube/spark/jobs/streaming_nids.py","534","trigger cada 20 s"]]},
+
+  // ---------- Batch ----------
+  {id:"preparar", col:"batch", k:"batch", t:"Preparar histórico", p:"nube/spark/jobs/preparar_historico.py",
+   tags:["batch"], d:"Lee TRCU.csv, lo limpia y escribe el histórico en Parquet, por flujo y por minuto, con la misma agregar_por_minuto del streaming.",
+   L:[["nube/spark/jobs/preparar_historico.py","11","docker compose run … preparar_historico.py"],["nube/spark/jobs/preparar_historico.py","54","historico_flujos"],["nube/spark/jobs/preparar_historico.py","56-57","agregar_por_minuto → historico_minuto"]]},
+  {id:"entrenar", col:"batch", k:"batch", ml:true, t:"Entrenador de series (cada 6 h)", p:"nube/spark/jobs/entrenar_series.py",
+   tags:["batch","ml"], d:"Cada 6 h reentrena los 4 modelos con el histórico y los datos del Pi, los valida en 3 cortes de tiempo y los compara con la persistencia. Solo publica si pasa la compuerta.",
+   L:[["nube/spark/jobs/entrenar_series.py","43","MINUTOS_ENTRE_ENTRENAMIENTOS = 360"],["nube/spark/jobs/entrenar_series.py","183","Validación por cortes de tiempo"],["nube/spark/jobs/entrenar_series.py","219-221","Compuerta: RMSE < persistencia y, si ya hay modelo, RMSE ≥ 1 % mejor y MAE ≤ +10 %"],["nube/spark/jobs/entrenar_series.py","234, 259","Guarda el modelo y su metricas.json"]]},
+  {id:"anomalias", col:"batch", k:"batch", ml:true, t:"Entrenador K-Means", p:"nube/spark/jobs/entrenar_anomalias.py",
+   tags:["batch","ml"], d:"Entrena el K-Means sobre los flujos históricos, elige el número de grupos y fija el umbral de puntaje.",
+   L:[["nube/spark/jobs/entrenar_anomalias.py","42","Lee historico_flujos"],["nube/spark/jobs/entrenar_anomalias.py","55-62","Prueba varios k y elige el mejor"],["nube/spark/jobs/entrenar_anomalias.py","73","Guarda el modelo"]]},
+  {id:"jupyter", col:"batch", k:"batch", t:"Notebooks Jupyter (U1)", p:"notebooks/00-04",
+   tags:["batch"], d:"Análisis batch sobre el Data Lake: 00 ETL de TRCU (calidad, Parquet, partition pruning) y 01-04, un notebook por integrante con su indicador y su modelo.",
+   L:[["notebooks/analisis_comun.py","20-21","Rutas LAKE y MODELOS"],["notebooks/analisis_comun.py","63-95","modelo_horario: entrena y evalúa"],["notebooks/00_etl_batch_trcu.py","124-128","Partition pruning"]]},
+
+  // ---------- Observabilidad ----------
+  {id:"push", col:"obs", k:"obs", t:"Pushgateway", p:"nube/spark/jobs/comun.py · push()",
+   tags:["stream"], d:"Spark le envía sus métricas por HTTP POST después de cada micro-lote. Prometheus las recoge de aquí.",
+   L:[["nube/spark/jobs/comun.py","13","PUSHGATEWAY_URL = http://pushgateway:9091"],["nube/spark/jobs/comun.py","165-174","push(): POST /metrics/job/…/instance/…"]]},
+  {id:"exporters", col:"obs", k:"obs", t:"kafka-exporter + node-exporter", p:"nube/compose.yml",
+   tags:["stream"], d:"Métricas de Kafka (mensajes, retraso) y de la VM (CPU, RAM, disco). Son la base de la observabilidad y de la estimación de costos.",
+   L:[["nube/compose.yml","49-56","kafka-exporter"],["nube/compose.yml","218","node-exporter"]]},
+  {id:"prom", col:"obs", k:"obs", t:"Prometheus", p:"nube/prometheus/prometheus.yml",
+   tags:["stream"], d:"Cada 15 s lee (scraping) el Pushgateway y los exporters, y guarda las series de tiempo.",
+   L:[["nube/prometheus/prometheus.yml","2","scrape_interval: 15s"],["nube/prometheus/prometheus.yml","16-20","Pushgateway con honor_labels"],["nube/prometheus/prometheus.yml","22-26","node-exporter (costos y escalado)"]]},
+  {id:"grafana", col:"obs", k:"obs", ml:true, t:"Grafana (puerto 3000)", p:"nube/grafana/provisioning/",
+   tags:["stream","ml"], d:"Tablero único del equipo: valor real contra predicción, umbral, alertas, salud del Pi y del pipeline.",
+   L:[["nube/grafana/provisioning/datasources/datasources.yml","8","url: http://prometheus:9090"],["nube/compose.yml","228","Servicio grafana"]]}
+];
+
+// Flechas: origen, destino, etiqueta, filtros.
+const E = [
+  ["laptop","github","git push",["batch","stream"]],
+  ["github","pages","docs.yml",["batch","stream"]],
+  ["laptop","sshd","SSH (VS Code Remote)",["batch","stream"]],
+  ["conf","subida","configura",["stream","hard"]],
+  ["conf","tunel","configura",["stream","hard"]],
+  ["captura","subida","PCAP en disco",["stream"]],
+  ["telemetria","tunel","MQTT 127.0.0.1:1883",["stream"]],
+  ["subida","sshd","SFTP sobre SSH :22",["stream","hard"]],
+  ["tunel","sshd","túnel SSH -L :22",["stream","hard"]],
+  ["sshd","incoming","PCAP .gz",["stream"]],
+  ["sshd","mosquitto","sale del túnel",["stream"]],
+  ["incoming","ingestor","glob cada 2 s",["stream"]],
+  ["mosquitto","puente","suscripción MQTT",["stream"]],
+  ["ingestor","k_flujos","Kafka: trafico-flujos",["stream"]],
+  ["puente","k_tele","Kafka: pi-telemetria",["stream"]],
+  ["productor","k_inc","Kafka: incidentes-seguridad",["stream"]],
+  ["k_flujos","q_trafico","readStream",["stream"]],
+  ["k_flujos","q_flujos","readStream",["stream"]],
+  ["k_tele","q_tele","readStream",["stream"]],
+  ["k_inc","q_inc","readStream",["stream"]],
+  ["k_inc","q_inc5","readStream",["stream"]],
+  ["q_trafico","inferencia","minuto cerrado",["stream","ml"]],
+  ["recarga","inferencia","modelo vigente",["ml"]],
+  ["inferencia","umbral","predicción",["ml","stream"]],
+  ["umbral","k_inc","incidente automático",["ml","stream"]],
+  ["q_trafico","lake","Parquet trafico_minuto",["stream","batch"]],
+  ["q_trafico","checkpoints","offsets",["stream","hard"]],
+  ["umbral","push","HTTP POST",["stream","ml"]],
+  ["q_flujos","push","HTTP POST",["stream"]],
+  ["q_tele","push","HTTP POST",["stream"]],
+  ["q_inc","push","HTTP POST",["stream"]],
+  ["q_inc5","push","HTTP POST",["stream"]],
+  ["modelos","recarga","metricas.json",["ml"]],
+  ["modelos","q_flujos","K-Means",["ml"]],
+  ["trcu","preparar","lee CSV",["batch"]],
+  ["preparar","lake","historico_*",["batch"]],
+  ["lake","entrenar","lee cada 6 h",["batch","ml"]],
+  ["lake","anomalias","historico_flujos",["batch","ml"]],
+  ["lake","jupyter","lee Parquet",["batch"]],
+  ["entrenar","modelos","publica si pasa la compuerta",["batch","ml"]],
+  ["anomalias","modelos","guarda",["batch","ml"]],
+  ["push","prom","scraping 15 s",["stream"]],
+  ["exporters","prom","scraping 15 s",["stream"]],
+  ["prom","grafana","consulta PromQL",["stream","ml"]]
+];
+
+const TOURS = {
+  trafico:{name:"Tráfico → Grafana", ids:["captura","subida","sshd","incoming","ingestor","k_flujos","q_trafico","lake","inferencia","umbral","push","prom","grafana"]},
+  telemetria:{name:"Telemetría del Pi", ids:["telemetria","tunel","sshd","mosquitto","puente","k_tele","q_tele","push","prom","grafana"]},
+  entreno:{name:"Entrenamiento → inferencia", ids:["trcu","preparar","lake","entrenar","modelos","recarga","inferencia","umbral"]}
+};
+
+const byId = Object.fromEntries(N.map(n=>[n.id,n]));
+const els = {}, edgeEls = [];
+const canvas = document.getElementById("canvas");
+const svg = document.getElementById("edges");
+const labels = document.getElementById("labels");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// Nodos
+for (const n of N){
+  const d = document.createElement("div");
+  d.className = `node k-${n.k}` + (n.ml ? " ml" : "");
+  d.tabIndex = 0; d.setAttribute("role","button");
+  d.dataset.id = n.id;
+  const b = (n.ml ? '<span class="bd ml">ML</span>' : "") + (n.hard ? '<span class="bd hd">HD</span>' : "");
+  d.innerHTML = `<div class="badges">${b}</div><div class="t">${esc(n.t)}</div><div class="p">${esc(n.p)}</div>`;
+  d.addEventListener("click", () => select(n.id));
+  d.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); select(n.id); }});
+  document.querySelector(`[data-col="${n.col}"]`).appendChild(d);
+  els[n.id] = d;
+}
+
+// Flechas
+const NS = "http://www.w3.org/2000/svg";
+for (const [a,b,lab,tags] of E){
+  const p = document.createElementNS(NS,"path");
+  p.setAttribute("class","e" + (tags.includes("ml") ? " ml" : ""));
+  p.setAttribute("marker-end","url(#ar)");
+  svg.appendChild(p);
+  const l = document.createElement("div");
+  l.className = "elabel"; l.textContent = lab;
+  labels.appendChild(l);
+  edgeEls.push({a,b,lab,tags,p,l});
+}
+
+function box(id){
+  const r = els[id].getBoundingClientRect(), c = canvas.getBoundingClientRect();
+  return {x:r.left-c.left, y:r.top-c.top, w:r.width, h:r.height};
+}
+function draw(){
+  svg.setAttribute("width", canvas.scrollWidth);
+  svg.setAttribute("height", canvas.scrollHeight);
+  for (const e of edgeEls){
+    const A = box(e.a), B = box(e.b);
+    let x1,y1,x2,y2,d;
+    const ac = A.x + A.w/2, bc = B.x + B.w/2;
+    if (Math.abs(ac - bc) < 40){            // misma columna: vertical
+      const down = B.y > A.y;
+      x1 = ac + 10; x2 = bc + 10;
+      y1 = down ? A.y + A.h : A.y; y2 = down ? B.y : B.y + B.h;
+      const k = Math.max(20, Math.abs(y2-y1)/2);
+      const bend = 60;
+      d = `M${x1},${y1} C${x1+bend},${y1+(down?k:-k)} ${x2+bend},${y2-(down?k:-k)} ${x2},${y2}`;
+    } else if (bc > ac){                    // hacia la derecha
+      x1 = A.x + A.w; y1 = A.y + A.h/2; x2 = B.x; y2 = B.y + B.h/2;
+      const k = Math.max(30, (x2-x1)/2);
+      d = `M${x1},${y1} C${x1+k},${y1} ${x2-k},${y2} ${x2},${y2}`;
+    } else {                                // hacia la izquierda
+      x1 = A.x; y1 = A.y + A.h/2; x2 = B.x + B.w; y2 = B.y + B.h/2;
+      const k = Math.max(30, (x1-x2)/2);
+      d = `M${x1},${y1} C${x1-k},${y1} ${x2+k},${y2} ${x2},${y2}`;
+    }
+    e.p.setAttribute("d", d);
+    const m = e.p.getPointAtLength(e.p.getTotalLength()/2);
+    e.l.style.left = m.x + "px"; e.l.style.top = m.y + "px";
+  }
+}
+
+// Estado
+let filter = "all", selected = null, tour = null, tourIdx = 0, showLabels = false;
+
+function render(){
+  const tourIds = tour ? TOURS[tour].ids : null;
+  const cur = tour ? tourIds[tourIdx] : null;
+  const prev = tour && tourIdx > 0 ? tourIds[tourIdx-1] : null;
+  for (const n of N){
+    const el = els[n.id];
+    let dim = false;
+    if (tour) dim = !tourIds.slice(0, tourIdx+1).includes(n.id);
+    else if (selected) dim = !(n.id === selected || E.some(([a,b]) => (a===selected&&b===n.id)||(b===selected&&a===n.id)));
+    else if (filter !== "all") dim = !n.tags.includes(filter);
+    el.classList.toggle("dim", dim);
+    el.classList.toggle("sel", n.id === selected && !tour);
+    el.classList.toggle("tourcur", n.id === cur);
+  }
+  for (const e of edgeEls){
+    let on = false, dim = false;
+    if (tour){
+      const seen = tourIds.slice(0, tourIdx+1);
+      on = seen.includes(e.a) && seen.includes(e.b);
+      dim = !on;
+    } else if (selected){ on = e.a === selected || e.b === selected; dim = !on; }
+    else if (filter !== "all"){ on = e.tags.includes(filter); dim = !on; }
+    e.p.classList.toggle("on", on);
+    e.p.classList.toggle("dim", dim);
+    e.p.setAttribute("marker-end", on ? (e.tags.includes("ml") && (filter==="ml"||tour==="entreno") ? "url(#ar-ml)" : "url(#ar-on)") : "url(#ar)");
+    e.l.classList.toggle("on", on || (showLabels && !dim));
+  }
+}
+
+const panel = document.getElementById("panel");
+function select(id){
+  if (tour) endTour();
+  selected = (selected === id) ? null : id;
+  if (selected) openPanel(id); else panel.classList.remove("open");
+  render();
+}
+function openPanel(id){
+  const n = byId[id];
+  document.getElementById("pTitle").textContent = n.t;
+  document.getElementById("pPath").textContent = n.p;
+  const tagName = {batch:"Batch (U1)",stream:"Streaming (U2)",ml:"Inferencia ML",hard:"Hardening"};
+  document.getElementById("pTags").innerHTML = n.tags.map(t => `<span class="tag ${t}">${tagName[t]}</span>`).join("");
+  document.getElementById("pDesc").textContent = n.d;
+  document.getElementById("pLines").innerHTML = n.L.map(([f,l,w]) =>
+    `<tr><td class="f">${esc(f)}<br><b>${l === "—" ? "" : "línea " + esc(l)}</b></td><td>${esc(w)}</td></tr>`).join("");
+  const c = [];
+  for (const [a,b,lab] of E){
+    if (b === id) c.push(`<button data-go="${a}">← ${esc(byId[a].t)} <span class="tag">${esc(lab)}</span></button>`);
+    if (a === id) c.push(`<button data-go="${b}">→ ${esc(byId[b].t)} <span class="tag">${esc(lab)}</span></button>`);
+  }
+  const conn = document.getElementById("pConn");
+  conn.innerHTML = c.join("") || '<span class="tag">Sin conexiones directas</span>';
+  conn.querySelectorAll("[data-go]").forEach(btn => btn.onclick = () => { selected = null; select(btn.dataset.go); els[btn.dataset.go].scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); });
+  panel.classList.add("open");
+}
+document.getElementById("pClose").onclick = () => { selected = null; panel.classList.remove("open"); render(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape"){ selected = null; panel.classList.remove("open"); if (tour) endTour(); render(); }});
+
+// Filtros
+document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => {
+  filter = b.dataset.f; selected = null; panel.classList.remove("open"); if (tour) endTour();
+  document.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+
+// Recorridos
+const tourbar = document.getElementById("tourbar");
+function showStep(){
+  const ids = TOURS[tour].ids, n = byId[ids[tourIdx]];
+  document.getElementById("tourtxt").innerHTML =
+    `<b>${esc(TOURS[tour].name)} · paso ${tourIdx+1} de ${ids.length}: ${esc(n.t)}</b> <span class="p">(${esc(n.p)})</span><br>${esc(n.d)}`;
+  document.getElementById("tPrev").disabled = tourIdx === 0;
+  document.getElementById("tNext").disabled = tourIdx === ids.length - 1;
+  els[n.id].scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
+  render();
+}
+function startTour(t){ tour = t; tourIdx = 0; selected = null; panel.classList.remove("open"); tourbar.classList.add("on"); showStep(); requestAnimationFrame(draw); }
+function endTour(){ tour = null; tourbar.classList.remove("on"); render(); requestAnimationFrame(draw); }
+document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => startTour(b.dataset.t));
+document.getElementById("tPrev").onclick = () => { if (tourIdx > 0){ tourIdx--; showStep(); } };
+document.getElementById("tNext").onclick = () => { if (tourIdx < TOURS[tour].ids.length-1){ tourIdx++; showStep(); } };
+document.getElementById("tEnd").onclick = endTour;
+
+document.getElementById("btnLabels").onclick = function(){
+  showLabels = !showLabels; this.setAttribute("aria-pressed", showLabels); render();
+};
+document.getElementById("btnTheme").onclick = () => {
+  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+};
+
+new ResizeObserver(() => draw()).observe(canvas);
+window.addEventListener("load", () => { draw(); render(); });
+draw(); render();
+</script>
+</body>
+</html>
