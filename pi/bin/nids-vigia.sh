@@ -22,7 +22,8 @@ reiniciar() {
 }
 
 # 1. Captura: tcpdump crea un archivo nuevo cada SEGUNDOS_POR_ARCHIVO.
-ultimo_pcap=$(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | tail -1)
+# find y no `ls *.pcap`: con ~38 000 archivos el comodín supera ARG_MAX (ver nids-subida.sh).
+ultimo_pcap=$(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' 2>/dev/null | sort | tail -1)
 limite_captura=$(( 3 * SEGUNDOS_POR_ARCHIVO + 30 ))
 if [[ -z "$ultimo_pcap" ]] || (( $(edad "$ultimo_pcap") > limite_captura )); then
   reiniciar nids-captura "sin PCAP nuevo en más de ${limite_captura} s"
@@ -34,9 +35,8 @@ if [[ "${HABILITAR_SUBIDA:-1}" == "1" ]]; then
   pendientes=0
   while read -r archivo; do
     [[ -e "${archivo}.subido" || -e "${archivo}.omitido" ]] && continue
-    e=$(edad "$archivo")
-    (( e > 120 && e < 1800 )) && pendientes=$(( pendientes + 1 ))
-  done < <(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | head -n -1)
+    pendientes=$(( pendientes + 1 ))
+  done < <(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' -mmin +2 -mmin -30 2>/dev/null)
   if (( pendientes > 0 && $(edad "$MARCA_SUBIDA") > 300 )); then
     reiniciar nids-subida "${pendientes} PCAP pendientes y ninguna subida correcta en 5 min"
   fi

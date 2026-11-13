@@ -37,13 +37,14 @@ paquetes_ajenos_ultimo_minuto() {
   while read -r archivo; do
     n=$(timeout 30 tcpdump -nn -r "$archivo" "not host $ip" 2>/dev/null | wc -l)
     total=$(( total + n ))
-  done < <(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | head -n -1 | tail -n "$archivos")
+  done < <(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' -mmin -5 2>/dev/null | sort | head -n -1 | tail -n "$archivos")
   echo "$total"
 }
 
 captura_al_dia() {
   local ultimo
-  ultimo=$(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | tail -1)
+  # find y no `ls *.pcap`: con ~38 000 archivos el comodín supera ARG_MAX (ver nids-subida.sh).
+  ultimo=$(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' -mmin -5 2>/dev/null | sort | tail -1)
   [[ -n "$ultimo" ]] && (( $(date +%s) - $(stat -c %Y "$ultimo") < 3 * SEGUNDOS_POR_ARCHIVO ))
 }
 

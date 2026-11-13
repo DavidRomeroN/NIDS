@@ -17,6 +17,15 @@ SEGUNDOS_MAX_SUBIDA=${SEGUNDOS_MAX_SUBIDA:-90}
 TMP=/run/nids-subida
 mkdir -p "$TMP"
 
+# PCAP locales ordenados por nombre (= por hora). Con find y no con
+# `ls "$DIR_CAPTURA"/*.pcap`: el comodín mete todos los nombres en un solo
+# comando, y pasados ~38 000 archivos supera el límite de Linux (ARG_MAX, 2 MB).
+# Entonces ls falla con "Argument list too long", la lista sale vacía y la
+# subida se detiene sin ningún error visible (pasó el 12-nov-2026 a las 10:52).
+listar_pcap() {
+  find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' 2>/dev/null | sort
+}
+
 subir() {
   local origen="$1" base
   base=$(basename "$origen" .pcap)
@@ -39,17 +48,32 @@ aplicar_retencion() {
   while true; do
     uso=$(df --output=pcent "$DIR_CAPTURA" | tail -1 | tr -dc '0-9')
     (( uso <= LIMITE_USO_DISCO_PCT )) && break
-    viejo=$(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | head -1)
+    viejo=$(listar_pcap | head -1)
     [[ -z "$viejo" ]] && break
     rm -f "$viejo" "${viejo}.subido" "${viejo}.omitido"
     echo "retencion: borrado $(basename "$viejo") (disco al ${uso}%)"
   done
 }
 
+# Al arrancar, una sola vez: lo que quedó sin subir hace más de 30 min (Pi
+# apagado, nube caída) se marca .omitido y queda solo en el disco local.
+# Así cada vuelta del ciclo revisa solo los PCAP recientes y no los miles
+# que se acumulan en la microSD (unos 2 800 por día).
+if [[ "$HABILITAR_SUBIDA" == "1" ]]; then
+  omitidos=0
+  while read -r archivo; do
+    [[ -e "${archivo}.subido" || -e "${archivo}.omitido" ]] && continue
+    touch "${archivo}.omitido"
+    omitidos=$(( omitidos + 1 ))
+  done < <(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' -mmin +30 2>/dev/null)
+  echo "arranque: ${omitidos} PCAP viejos marcados como omitidos"
+fi
+
 while true; do
   if [[ "$HABILITAR_SUBIDA" == "1" ]]; then
-    # Todos menos el último: ese es el que tcpdump está escribiendo ahora.
-    mapfile -t terminados < <(ls -1 "$DIR_CAPTURA"/*.pcap 2>/dev/null | sort | head -n -1)
+    # Solo los de los últimos ~31 min, todos menos el último: ese es el que
+    # tcpdump está escribiendo ahora.
+    mapfile -t terminados < <(find "$DIR_CAPTURA" -maxdepth 1 -type f -name '*.pcap' -mmin -31 2>/dev/null | sort | head -n -1)
     for archivo in "${terminados[@]}"; do
       [[ -e "${archivo}.subido" || -e "${archivo}.omitido" ]] && continue
       # La nube es para tiempo real: lo que quedó atrasado más de 30 min (nube

@@ -42,11 +42,23 @@ Todos arrancan solos al enchufar el Pi y se reinician si fallan.
 | `nids-vigia` (timer, cada 2 min) | `pi/bin/nids-vigia.sh` | Reinicia la captura, la subida o el túnel si dejaron de avanzar |
 | `nids-respaldo` | `pi/bin/nids-respaldo.sh` | Tráfico de respaldo marcado cuando el sensor no escucha tráfico |
 
-### Cuelgues de la subida
+### Cortes de la subida
 
-Antes, `sftp` corría sin `ServerAlive` ni tope de tiempo: si la conexión
-quedaba a medias, esperaba para siempre. Hubo cortes de 17 a 20 min y uno de
-unas 8 h el 12-nov-2026. Ahora tiene tres defensas:
+**12-nov-2026, 10:52: la subida se detuvo sin ningún error.** La causa real
+(confirmada con los registros del Pi y una prueba con 39 200 archivos): la
+subida buscaba los PCAP con `ls "$DIR_CAPTURA"/*.pcap`. El comodín mete todos
+los nombres en un solo comando y Linux lo limita a 2 MB (`ARG_MAX`), unos
+38 100 archivos. El Pi guarda todos sus PCAP en la microSD y a las 10:52 tenía
+38 123: `ls` falló con `Argument list too long`, la lista salió vacía y la
+subida creyó que no había nada que subir. La captura y la telemetría seguían
+funcionando. Ahora `nids-subida.sh`, `nids-vigia.sh` y `nids-respaldo.sh`
+buscan con `find`, que no tiene ese límite, y la subida revisa solo los PCAP
+de los últimos 30 minutos (los más viejos los marca `.omitido` una vez al
+arrancar).
+
+Además, `sftp` corría sin `ServerAlive` ni tope de tiempo: si la conexión
+quedaba a medias, esperaba para siempre (cortes de 17 a 20 min). Ahora la
+subida tiene estas defensas:
 
 1. `ServerAliveInterval=10` y `ServerAliveCountMax=3` en `nids-subida.sh`:
    ssh detecta la conexión muerta en unos 30 s.
@@ -55,6 +67,11 @@ unas 8 h el 12-nov-2026. Ahora tiene tres defensas:
 3. `nids-vigia`: si hay PCAP pendientes y ninguna subida correcta en 5 min,
    reinicia `nids-subida`. También reinicia `nids-captura` sin archivos
    nuevos y `nids-tunel` si `127.0.0.1:1883` no responde.
+
+Los registros del Pi ahora se guardan entre reinicios (Raspberry Pi OS trae
+`Storage=volatile`): `/etc/systemd/journald.conf.d/50-nids-persistente.conf`
+con `Storage=persistent` y un tope de 200 MB. Ver con
+`journalctl -u nids-subida -u nids-vigia -b -1`.
 
 ### Tráfico de respaldo
 
