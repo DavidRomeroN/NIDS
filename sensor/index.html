@@ -512,6 +512,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3. Servicios (systemd)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cuelgues-de-la-subida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cuelgues de la subida
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trafico-de-respaldo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tráfico de respaldo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1416,6 +1444,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3. Servicios (systemd)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cuelgues-de-la-subida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cuelgues de la subida
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trafico-de-respaldo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tráfico de respaldo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1559,8 +1615,50 @@ switch se le piden dos puertos: el espejo y uno normal con salida TCP al 22
 <td><code>pi/bin/nids-telemetria.py</code></td>
 <td>Telemetría cada 5 s por MQTT</td>
 </tr>
+<tr>
+<td><code>nids-vigia</code> (timer, cada 2 min)</td>
+<td><code>pi/bin/nids-vigia.sh</code></td>
+<td>Reinicia la captura, la subida o el túnel si dejaron de avanzar</td>
+</tr>
+<tr>
+<td><code>nids-respaldo</code></td>
+<td><code>pi/bin/nids-respaldo.sh</code></td>
+<td>Tráfico de respaldo marcado cuando el sensor no escucha tráfico</td>
+</tr>
 </tbody>
 </table>
+<h3 id="cuelgues-de-la-subida">Cuelgues de la subida<a class="headerlink" href="#cuelgues-de-la-subida" title="Permanent link">&para;</a></h3>
+<p>Antes, <code>sftp</code> corría sin <code>ServerAlive</code> ni tope de tiempo: si la conexión
+quedaba a medias, esperaba para siempre. Hubo cortes de 17 a 20 min y uno de
+unas 8 h el 12-nov-2026. Ahora tiene tres defensas:</p>
+<ol>
+<li><code>ServerAliveInterval=10</code> y <code>ServerAliveCountMax=3</code> en <code>nids-subida.sh</code>:
+   ssh detecta la conexión muerta en unos 30 s.</li>
+<li><code>timeout</code> de <code>SEGUNDOS_MAX_SUBIDA</code> (90 s) por archivo: si una subida se
+   pasa de ese tiempo, se corta y se reintenta.</li>
+<li><code>nids-vigia</code>: si hay PCAP pendientes y ninguna subida correcta en 5 min,
+   reinicia <code>nids-subida</code>. También reinicia <code>nids-captura</code> sin archivos
+   nuevos y <code>nids-tunel</code> si <code>127.0.0.1:1883</code> no responde.</li>
+</ol>
+<h3 id="trafico-de-respaldo">Tráfico de respaldo<a class="headerlink" href="#trafico-de-respaldo" title="Permanent link">&para;</a></h3>
+<p>Si en el último minuto el sensor escuchó menos de <code>UMBRAL_PAQUETES_MIN</code> (10)
+paquetes de <strong>otros equipos</strong>, el Pi genera un poco de tráfico normal: 3
+consultas DNS y una petición HTTPS liviana a un sitio de <code>SITIOS_RESPALDO</code>.
+Así el pipeline no queda sin datos.</p>
+<ul>
+<li><strong>Tamaño:</strong> pensado para parecerse a un minuto típico del sensor (mediana
+  real ~5 KB y ~24 flujos por minuto en 18 972 minutos): solo DNS y una
+  petición HTTPS de cabeceras, sin descargar páginas, para no fabricar picos
+  que el modelo marque como anomalía. El tamaño exacto falta medirlo en el Pi.</li>
+<li><strong>Marcado, nunca como tráfico real:</strong> cada generación queda en
+  <code>/run/nids/trafico_respaldo</code>, en <code>journalctl -u nids-respaldo</code> y en la
+  telemetría como <code>"traficoRespaldo": true</code>.</li>
+<li><strong>Límite:</strong> solo funciona cuando <code>eth0</code> tiene IP, como hoy. En un puerto
+  espejo de verdad lo generado saldría por otra interfaz y el sensor no lo
+  escucharía.</li>
+<li><strong>Apagarlo:</strong> <code>TRAFICO_RESPALDO=0</code> en <code>/etc/nids/nids.conf</code> y
+  <code>sudo systemctl restart nids-respaldo</code>.</li>
+</ul>
 <h2 id="4-decisiones">4. Decisiones<a class="headerlink" href="#4-decisiones" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>512 bytes por paquete en el disco local:</strong> conserva cabeceras y el saludo
@@ -1588,6 +1686,11 @@ tarjeta de red con lo que procesó Spark (si divergen, se están perdiendo datos
 del sensor, monta el disco por UUID (sin formatearlo) y habilita los servicios.
 Al final imprime la clave pública que hay que autorizar en la VM
 (ver <a href="../despliegue/">Despliegue</a>).</p>
+<p>Para un Pi que ya tiene el sensor instalado, <code>actualizar.sh</code> copia solo los
+scripts y servicios nuevos y los reinicia, sin tocar <code>nids.conf</code>, la llave
+ni el disco:</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>./actualizar.sh
+</code></pre></div>
 
 
 
