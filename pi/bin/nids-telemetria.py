@@ -69,6 +69,14 @@ def pendientes_subida():
     return max(len([p for p in pcaps if p not in marcados]) - 1, 0)
 
 
+def trafico_respaldo_activo():
+    # nids-respaldo.sh toca este archivo cada vez que genera tráfico propio.
+    try:
+        return time.time() - os.path.getmtime("/run/nids/trafico_respaldo") < 90
+    except OSError:
+        return False
+
+
 def lectura(cpu_anterior):
     total, idle = tiempos_cpu()
     delta_total = max(total - cpu_anterior[0], 1)
@@ -94,6 +102,8 @@ def lectura(cpu_anterior):
         "discoUsoPct": round(uso_pct, 1),
         "pendientesSubida": pendientes_subida(),
         "capturaActiva": captura_activa(),
+        # True = el último minuto incluye tráfico generado por nids-respaldo.sh.
+        "traficoRespaldo": trafico_respaldo_activo(),
     }
     return evento, (total, idle)
 

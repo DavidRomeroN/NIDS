@@ -25,6 +25,16 @@ VM_PUERTO=22
 VM_USUARIO=nids-sensor
 CLAVE_SSH=/etc/nids/id_ed25519
 HABILITAR_SUBIDA=1
+# Tope por archivo: si un sftp pasa de estos segundos se corta y se reintenta.
+SEGUNDOS_MAX_SUBIDA=90
+
+# Tráfico de respaldo (nids-respaldo.sh): si en un minuto el sensor escucha
+# menos de UMBRAL_PAQUETES_MIN paquetes de otros equipos, el Pi genera un poco
+# de tráfico normal (DNS + una petición HTTPS) hacia estos sitios. Queda
+# marcado en la telemetría ("traficoRespaldo"). 0 = desactivado.
+TRAFICO_RESPALDO=1
+UMBRAL_PAQUETES_MIN=10
+SITIOS_RESPALDO="www.google.com www.wikipedia.org www.cloudflare.com www.microsoft.com www.upeu.edu.pe"
 
 # Tráfico que NO se captura: el propio canal del sensor hacia la nube
 # (evita que el Pi se mida a sí mismo subiendo archivos).

@@ -1,0 +1,13 @@
+[Unit]
+Description=NIDS - trafico de respaldo marcado cuando el sensor no escucha trafico
+After=network-online.target nids-captura.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/nids/bin/nids-respaldo.sh
+Restart=always
+RestartSec=30
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

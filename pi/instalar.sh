@@ -23,11 +23,12 @@ echo "== 1. Paquetes"
 export DEBIAN_FRONTEND=noninteractive
 echo "wireshark-common wireshark-common/install-setuid boolean false" | debconf-set-selections
 apt-get update
-apt-get install -y tcpdump wireshark-common autossh python3-paho-mqtt gzip exfatprogs
+apt-get install -y tcpdump wireshark-common autossh python3-paho-mqtt gzip exfatprogs curl
 
 echo "== 2. Archivos del sensor"
 install -d /opt/nids/bin /etc/nids
-install -m 755 bin/nids-captura.sh bin/nids-subida.sh bin/nids-telemetria.py /opt/nids/bin/
+install -m 755 bin/nids-captura.sh bin/nids-subida.sh bin/nids-telemetria.py \
+               bin/nids-vigia.sh bin/nids-respaldo.sh /opt/nids/bin/
 if [[ ! -f /etc/nids/nids.conf ]]; then
   sed -e "s/^SENSOR_ID=.*/SENSOR_ID=${SENSOR_ID}/" \
       -e "s/^VM_HOST=.*/VM_HOST=${VM_HOST}/" \
@@ -63,9 +64,9 @@ systemctl daemon-reload
 mount /mnt/nids || mount -a
 
 echo "== 4. Servicios"
-install -m 644 systemd/*.service /etc/systemd/system/
+install -m 644 systemd/*.service systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable --now nids-captura nids-subida nids-tunel nids-telemetria
+systemctl enable --now nids-captura nids-subida nids-tunel nids-telemetria nids-respaldo nids-vigia.timer
 # Hora exacta: sin NTP, las ventanas de Spark no calzan con la realidad.
 timedatectl set-ntp true
 

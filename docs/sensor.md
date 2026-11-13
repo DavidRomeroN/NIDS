@@ -39,6 +39,42 @@ Todos arrancan solos al enchufar el Pi y se reinician si fallan.
 | `nids-subida` | `pi/bin/nids-subida.sh` | `editcap -s 128`, gzip y SFTP de cada archivo terminado; retención en anillo |
 | `nids-tunel` | `systemd/nids-tunel.service` | `autossh -L 1883` hacia el MQTT de la nube |
 | `nids-telemetria` | `pi/bin/nids-telemetria.py` | Telemetría cada 5 s por MQTT |
+| `nids-vigia` (timer, cada 2 min) | `pi/bin/nids-vigia.sh` | Reinicia la captura, la subida o el túnel si dejaron de avanzar |
+| `nids-respaldo` | `pi/bin/nids-respaldo.sh` | Tráfico de respaldo marcado cuando el sensor no escucha tráfico |
+
+### Cuelgues de la subida
+
+Antes, `sftp` corría sin `ServerAlive` ni tope de tiempo: si la conexión
+quedaba a medias, esperaba para siempre. Hubo cortes de 17 a 20 min y uno de
+unas 8 h el 12-nov-2026. Ahora tiene tres defensas:
+
+1. `ServerAliveInterval=10` y `ServerAliveCountMax=3` en `nids-subida.sh`:
+   ssh detecta la conexión muerta en unos 30 s.
+2. `timeout` de `SEGUNDOS_MAX_SUBIDA` (90 s) por archivo: si una subida se
+   pasa de ese tiempo, se corta y se reintenta.
+3. `nids-vigia`: si hay PCAP pendientes y ninguna subida correcta en 5 min,
+   reinicia `nids-subida`. También reinicia `nids-captura` sin archivos
+   nuevos y `nids-tunel` si `127.0.0.1:1883` no responde.
+
+### Tráfico de respaldo
+
+Si en el último minuto el sensor escuchó menos de `UMBRAL_PAQUETES_MIN` (10)
+paquetes de **otros equipos**, el Pi genera un poco de tráfico normal: 3
+consultas DNS y una petición HTTPS liviana a un sitio de `SITIOS_RESPALDO`.
+Así el pipeline no queda sin datos.
+
+- **Tamaño:** pensado para parecerse a un minuto típico del sensor (mediana
+  real ~5 KB y ~24 flujos por minuto en 18 972 minutos): solo DNS y una
+  petición HTTPS de cabeceras, sin descargar páginas, para no fabricar picos
+  que el modelo marque como anomalía. El tamaño exacto falta medirlo en el Pi.
+- **Marcado, nunca como tráfico real:** cada generación queda en
+  `/run/nids/trafico_respaldo`, en `journalctl -u nids-respaldo` y en la
+  telemetría como `"traficoRespaldo": true`.
+- **Límite:** solo funciona cuando `eth0` tiene IP, como hoy. En un puerto
+  espejo de verdad lo generado saldría por otra interfaz y el sensor no lo
+  escucharía.
+- **Apagarlo:** `TRAFICO_RESPALDO=0` en `/etc/nids/nids.conf` y
+  `sudo systemctl restart nids-respaldo`.
 
 ## 4. Decisiones
 
@@ -72,3 +108,11 @@ El script instala paquetes, crea `/etc/nids/nids.conf`, genera la clave SSH
 del sensor, monta el disco por UUID (sin formatearlo) y habilita los servicios.
 Al final imprime la clave pública que hay que autorizar en la VM
 (ver [Despliegue](despliegue.md)).
+
+Para un Pi que ya tiene el sensor instalado, `actualizar.sh` copia solo los
+scripts y servicios nuevos y los reinicia, sin tocar `nids.conf`, la llave
+ni el disco:
+
+```bash
+sudo ./actualizar.sh
+```

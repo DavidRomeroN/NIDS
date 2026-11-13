@@ -1,0 +1,6 @@
+[Unit]
+Description=NIDS - vigia: reinicia captura, subida o tunel si se quedan colgados
+
+[Service]
+Type=oneshot
+ExecStart=/opt/nids/bin/nids-vigia.sh
