@@ -1,0 +1,56 @@
+# Estado del sistema del Pi leído de la microSD el 2026-11-12
+sistema: Debian GNU/Linux 13 (trixie)
+hostname: nids-pi
+zona horaria: America/Lima
+
+## Servicios habilitados al arrancar
+NetworkManager.service
+avahi-daemon.service
+console-setup.service
+cron.service
+cups.path
+e2scrub_reap.service
+glamor-test.service
+nfs-client.target
+nids-captura.service
+nids-subida.service
+nids-telemetria.service
+nids-tunel.service
+remote-fs.target
+rp1-test.service
+rpcbind.service
+rpi-eeprom-update.service
+ssh.service
+sshswitch.service
+wpa_supplicant.service
+
+## Timers habilitados
+apt-daily-upgrade.timer
+apt-daily.timer
+dpkg-db-backup.timer
+e2scrub_all.timer
+fstrim.timer
+logrotate.timer
+man-db.timer
+
+## Sincronización de hora
+systemd-timesyncd.service
+
+## Paquetes del sensor (instalar.sh)
+tcpdump 4.99.5-2
+wireshark-common 4.4.19-0+deb13u1
+autossh 1.4g-1+b1
+python3-paho-mqtt 2.1.0-1
+gzip 1.13-1+deb13u1
+exfatprogs 1.2.9-1+deb13u1
+curl 8.14.1-2+deb13u5
+
+## Llaves PRIVADAS que existen en el Pi y NO se copiaron
+/etc/nids/id_ed25519                 (llave del sensor ante la VM)
+/home/david/nids-pi/clave/id_ed25519 (la misma llave, usada por instalar.sh)
+/etc/ssh/ssh_host_*_key              (identidad del SSH del propio Pi)
+
+## Datos del sensor
+PCAP: 39140  subidos: 38111  omitidos: 12  tamaño: 780M
+primero: nids-pi-01_20261030_003544.pcap
+último:  nids-pi-01_20261112_192034.pcap

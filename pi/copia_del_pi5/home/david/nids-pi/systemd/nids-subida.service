@@ -1,0 +1,13 @@
+[Unit]
+Description=NIDS - subida de cabeceras a la nube y retencion local
+After=network-online.target nids-captura.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/nids/bin/nids-subida.sh
+Restart=always
+RestartSec=10
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

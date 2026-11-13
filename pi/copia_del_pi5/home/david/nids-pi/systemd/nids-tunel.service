@@ -1,0 +1,19 @@
+[Unit]
+Description=NIDS - tunel SSH hacia el MQTT de la nube
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/etc/nids/nids.conf
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/bin/autossh -M 0 -N \
+  -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes \
+  -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/etc/nids/known_hosts \
+  -i ${CLAVE_SSH} -p ${VM_PUERTO} \
+  -L 127.0.0.1:1883:127.0.0.1:1883 \
+  ${VM_USUARIO}@${VM_HOST}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
