@@ -516,10 +516,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cuelgues-de-la-subida" class="md-nav__link">
+  <a href="#cortes-de-la-subida" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cuelgues de la subida
+        Cortes de la subida
       
     </span>
   </a>
@@ -1448,10 +1448,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cuelgues-de-la-subida" class="md-nav__link">
+  <a href="#cortes-de-la-subida" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cuelgues de la subida
+        Cortes de la subida
       
     </span>
   </a>
@@ -1627,10 +1627,21 @@ switch se le piden dos puertos: el espejo y uno normal con salida TCP al 22
 </tr>
 </tbody>
 </table>
-<h3 id="cuelgues-de-la-subida">Cuelgues de la subida<a class="headerlink" href="#cuelgues-de-la-subida" title="Permanent link">&para;</a></h3>
-<p>Antes, <code>sftp</code> corría sin <code>ServerAlive</code> ni tope de tiempo: si la conexión
-quedaba a medias, esperaba para siempre. Hubo cortes de 17 a 20 min y uno de
-unas 8 h el 12-nov-2026. Ahora tiene tres defensas:</p>
+<h3 id="cortes-de-la-subida">Cortes de la subida<a class="headerlink" href="#cortes-de-la-subida" title="Permanent link">&para;</a></h3>
+<p><strong>12-nov-2026, 10:52: la subida se detuvo sin ningún error.</strong> La causa real
+(confirmada con los registros del Pi y una prueba con 39 200 archivos): la
+subida buscaba los PCAP con <code>ls "$DIR_CAPTURA"/*.pcap</code>. El comodín mete todos
+los nombres en un solo comando y Linux lo limita a 2 MB (<code>ARG_MAX</code>), unos
+38 100 archivos. El Pi guarda todos sus PCAP en la microSD y a las 10:52 tenía
+38 123: <code>ls</code> falló con <code>Argument list too long</code>, la lista salió vacía y la
+subida creyó que no había nada que subir. La captura y la telemetría seguían
+funcionando. Ahora <code>nids-subida.sh</code>, <code>nids-vigia.sh</code> y <code>nids-respaldo.sh</code>
+buscan con <code>find</code>, que no tiene ese límite, y la subida revisa solo los PCAP
+de los últimos 30 minutos (los más viejos los marca <code>.omitido</code> una vez al
+arrancar).</p>
+<p>Además, <code>sftp</code> corría sin <code>ServerAlive</code> ni tope de tiempo: si la conexión
+quedaba a medias, esperaba para siempre (cortes de 17 a 20 min). Ahora la
+subida tiene estas defensas:</p>
 <ol>
 <li><code>ServerAliveInterval=10</code> y <code>ServerAliveCountMax=3</code> en <code>nids-subida.sh</code>:
    ssh detecta la conexión muerta en unos 30 s.</li>
@@ -1640,6 +1651,10 @@ unas 8 h el 12-nov-2026. Ahora tiene tres defensas:</p>
    reinicia <code>nids-subida</code>. También reinicia <code>nids-captura</code> sin archivos
    nuevos y <code>nids-tunel</code> si <code>127.0.0.1:1883</code> no responde.</li>
 </ol>
+<p>Los registros del Pi ahora se guardan entre reinicios (Raspberry Pi OS trae
+<code>Storage=volatile</code>): <code>/etc/systemd/journald.conf.d/50-nids-persistente.conf</code>
+con <code>Storage=persistent</code> y un tope de 200 MB. Ver con
+<code>journalctl -u nids-subida -u nids-vigia -b -1</code>.</p>
 <h3 id="trafico-de-respaldo">Tráfico de respaldo<a class="headerlink" href="#trafico-de-respaldo" title="Permanent link">&para;</a></h3>
 <p>Si en el último minuto el sensor escuchó menos de <code>UMBRAL_PAQUETES_MIN</code> (10)
 paquetes de <strong>otros equipos</strong>, el Pi genera un poco de tráfico normal: 3
